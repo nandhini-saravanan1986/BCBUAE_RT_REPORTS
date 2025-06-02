@@ -92,7 +92,27 @@ public class UserProfile implements UserDetails {
 	private String disable_flg;
 	private Blob photo;
 	private String domain_id;
+    private String acct_access_code;
+    private String brf181_login;
+    private String	pass_exp_days;
+    private String	log_in_count;
 
+    
+    
+    
+   
+    public String getBrf181_login() {
+		return brf181_login;
+	}
+	public void setBrf181_login(String brf181_login) {
+		this.brf181_login = brf181_login;
+	}
+	public String getAcct_access_code() {
+		return acct_access_code;
+	}
+    public void setAcct_access_code(String acct_access_code) {
+		this.acct_access_code = acct_access_code;
+	}
 	public String getBank_code() {
 		return bank_code;
 	}
@@ -530,7 +550,19 @@ public class UserProfile implements UserDetails {
 	public void setDomain_id(String domain_id) {
 		this.domain_id = domain_id;
 	}
-
+	
+	public String getPass_exp_days() {
+		return pass_exp_days;
+	}
+	public void setPass_exp_days(String pass_exp_days) {
+		this.pass_exp_days = pass_exp_days;
+	}
+	public String getLog_in_count() {
+		return log_in_count;
+	}
+	public void setLog_in_count(String log_in_count) {
+		this.log_in_count = log_in_count;
+	}
 	@Override
 	@JsonIgnore
 	public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -552,7 +584,7 @@ public class UserProfile implements UserDetails {
 	@Override
 	@JsonIgnore
 	public boolean isAccountNonLocked() {
-		if (this.getUser_locked_flg().equals("Y")) {
+		if (this.getUser_status().equals("Inactive")) {
 
 			return false;
 		} else {
@@ -584,6 +616,26 @@ public class UserProfile implements UserDetails {
 		}
 	}
 	
+	@JsonIgnore
+	public boolean isEnabledUser() {
+		
+		if (this.getLogin_status().equals("Inactive")) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+	
+	@JsonIgnore
+	public boolean isverifiedUser() {
+		
+		if (this.entity_flg.equals("N")) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+	
 	public boolean isLoginAllowed() {
 		
 		DateFormat dateFormat = new SimpleDateFormat("hh:mm");
@@ -596,15 +648,22 @@ public class UserProfile implements UserDetails {
 			LocalTime low = LocalDateTime.ofInstant(loginLow.toInstant(), ZoneId.systemDefault()).toLocalTime();
 			LocalTime currTime = java.time.LocalTime.now();
 			
-			if(currTime.isAfter(low) && currTime.isBefore(high) && entity_flg.equals("Y")) {
-				return true;
-			}else {
+			if(currTime.isAfter(low) && entity_flg.equals("Y")) {
+				
+			if(currTime.isBefore(high)) {
+
+				{
+					return true;
+				}
+			}
+			else {
 				/* Always return true to allow login any time */
 				return true;
 			}
 				
 			
-		} catch (ParseException e) {
+			}
+			} catch (ParseException e) {
 			
 			e.printStackTrace();
 		}
@@ -612,5 +671,6 @@ public class UserProfile implements UserDetails {
 		
 		return false;
 	}
+
 
 }

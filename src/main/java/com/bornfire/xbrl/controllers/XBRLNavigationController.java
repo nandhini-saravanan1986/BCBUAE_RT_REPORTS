@@ -38,6 +38,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.bornfire.xbrl.entities.AccessAndRoles;
+import com.bornfire.xbrl.entities.AccessandRolesRepository;
 import com.bornfire.xbrl.entities.AlertManagementEntity;
 import com.bornfire.xbrl.entities.AlertManagementRepository;
 
@@ -76,7 +78,7 @@ import com.bornfire.xbrl.services.ReferenceCodeConfigure;
 import com.bornfire.xbrl.services.ReportCodeMappingService;
 import com.bornfire.xbrl.services.ReportServices;
 import com.bornfire.xbrl.services.ReportServices.ReportTitle;
-
+import com.bornfire.xbrl.services.AccessAndRolesServices;
 
 import net.sf.jasperreports.engine.JRException;
 
@@ -89,6 +91,15 @@ public class XBRLNavigationController {
 	@Autowired
 	LoginServices loginServices;
 
+	@Autowired
+	AccessAndRolesServices AccessRoleService;
+	
+	@Autowired
+	AccessandRolesRepository accessandrolesrepository;
+	
+	@Autowired
+	SessionFactory sessionFactory;
+	
 	@Autowired
 	ReportServices reportServices;
 
@@ -229,28 +240,114 @@ public class XBRLNavigationController {
 		return "XBRLDashboard";
 	}
 
+	@RequestMapping(value = "AccessandRoles", method = { RequestMethod.GET, RequestMethod.POST })
+	public String IPSAccessandRoles(@RequestParam(required = false) String formmode,
+			@RequestParam(required = false) String userid, @RequestParam(required = false) Optional<Integer> page,
+			@RequestParam(value = "size", required = false) Optional<Integer> size, Model md, HttpServletRequest req) {
+
+		String roleId = (String) req.getSession().getAttribute("ROLEID");
+		md.addAttribute("IPSRoleMenu", AccessRoleService.getRoleMenu(roleId));
+
+		if (formmode == null || formmode.equals("list")) {
+			md.addAttribute("menu", "ACCESS AND ROLES");
+			md.addAttribute("menuname", "ACCESS AND ROLES");
+			md.addAttribute("formmode", "list");
+			md.addAttribute("AccessandRoles", accessandrolesrepository.rulelist());
+		} else if (formmode.equals("add")) {
+			md.addAttribute("menuname", "ACCESS AND ROLES - ADD");
+			md.addAttribute("formmode", "add");
+		} else if (formmode.equals("edit")) {
+			md.addAttribute("menuname", "ACCESS AND ROLES - EDIT");
+			md.addAttribute("formmode", formmode);
+			md.addAttribute("IPSAccessRole", AccessRoleService.getRoleId(userid));
+		} else if (formmode.equals("view")) {
+			md.addAttribute("menuname", "ACCESS AND ROLES - INQUIRY");
+			md.addAttribute("formmode", formmode);
+			md.addAttribute("IPSAccessRole", AccessRoleService.getRoleId(userid));
+
+		} else if (formmode.equals("verify")) {
+			md.addAttribute("menuname", "ACCESS AND ROLES - VERIFY");
+			md.addAttribute("formmode", formmode);
+			md.addAttribute("IPSAccessRole", AccessRoleService.getRoleId(userid));
+
+		} else if (formmode.equals("delete")) {
+			md.addAttribute("menuname", "ACCESS AND ROLES - DELETE");
+			md.addAttribute("formmode", formmode);
+			md.addAttribute("IPSAccessRole", AccessRoleService.getRoleId(userid));
+		}
+
+		md.addAttribute("adminflag", "adminflag");
+		md.addAttribute("userprofileflag", "userprofileflag");
+
+		return "AccessandRoles";
+	}
+	
+	@RequestMapping(value = "createAccessRole", method = RequestMethod.POST)
+	@ResponseBody
+	public String createAccessRoleEn(@RequestParam("formmode") String formmode,
+			@RequestParam(value = "adminValue", required = false) String adminValue,
+			@RequestParam(value = "BRF_ReportsValue", required = false) String BRF_ReportsValue,
+			@RequestParam(value = "Basel_ReportsValue", required = false) String Basel_ReportsValue,
+			@RequestParam(value = "ArchivalValue", required = false) String ArchivalValue,
+			@RequestParam(value = "Audit_InquiriesValue", required = false) String Audit_InquiriesValue,
+			@RequestParam(value = "RBR_ReportsValue", required = false) String RBR_ReportsValue,
+			@RequestParam(value = "VAT_LedgerValue", required = false) String VAT_LedgerValue,
+			@RequestParam(value = "Invoice_DataValue", required = false) String Invoice_DataValue,
+			@RequestParam(value = "finalString", required = false) String finalString,
+			
+			@ModelAttribute AccessAndRoles alertparam, Model md, HttpServletRequest rq) {
+
+		String userid = (String) rq.getSession().getAttribute("USERID");
+		String roleId = (String) rq.getSession().getAttribute("ROLEID");
+		md.addAttribute("IPSRoleMenu", AccessRoleService.getRoleMenu(roleId));
+
+		String msg = AccessRoleService.addPARAMETER(alertparam, formmode, adminValue, BRF_ReportsValue, Basel_ReportsValue,
+				ArchivalValue, Audit_InquiriesValue,RBR_ReportsValue, VAT_LedgerValue,Invoice_DataValue,finalString, userid);
+
+		return msg;
+
+	}
+	
+
 	@RequestMapping(value = "UserProfile", method = { RequestMethod.GET, RequestMethod.POST })
 	public String userprofile(@RequestParam(required = false) String formmode,
 			@RequestParam(required = false) String userid,
 			@RequestParam(value = "page", required = false) Optional<Integer> page,
 			@RequestParam(value = "size", required = false) Optional<Integer> size, Model md, HttpServletRequest req) {
-		System.out.println("abcd");
+
 		int currentPage = page.orElse(0);
 		int pageSize = size.orElse(Integer.parseInt(pagesize));
 
 		String loginuserid = (String) req.getSession().getAttribute("USERID");
+		String WORKCLASSAC = (String) req.getSession().getAttribute("WORKCLASS");
+		String ROLEIDAC = (String) req.getSession().getAttribute("ROLEID");
+		md.addAttribute("RuleIDType", accessandrolesrepository.roleidtype());
+		
+		System.out.println("work class is : "+ WORKCLASSAC);
 		// Logging Navigation
 		loginServices.SessionLogging("USERPROFILE", "M2", req.getSession().getId(), loginuserid, req.getRemoteAddr(),
 				"ACTIVE");
-
-		md.addAttribute("menu", "UserProfile"); // To highlight the menu
+		Session hs1 = sessionFactory.getCurrentSession();
+		md.addAttribute("menu", "USER PROFILE"); // To highlight the menu
 
 		if (formmode == null || formmode.equals("list")) {
 
-			md.addAttribute("formmode", "list"); // to set which form - valid values are "edit" , "add" & "list"
-			md.addAttribute("userProfiles", loginServices.getUsersList());
+			md.addAttribute("formmode", "list");// to set which form - valid values are "edit" , "add" & "list"
+			md.addAttribute("WORKCLASSAC", WORKCLASSAC);
+			md.addAttribute("ROLEIDAC", ROLEIDAC);
+			md.addAttribute("loginuserid", loginuserid);
+
+			Iterable<UserProfile> user = loginServices.getUsersList();
+
+			md.addAttribute("userProfiles", user);
 
 		} else if (formmode.equals("edit")) {
+
+			md.addAttribute("formmode", formmode);
+			md.addAttribute("domains", reportServices.getDomainList());
+			md.addAttribute("userProfile", loginServices.getUser(userid));
+
+		} else if (formmode.equals("verify")) {
 
 			md.addAttribute("formmode", formmode);
 			md.addAttribute("domains", reportServices.getDomainList());
@@ -260,7 +357,7 @@ public class XBRLNavigationController {
 
 			md.addAttribute("formmode", formmode);
 			md.addAttribute("domains", reportServices.getDomainList());
-			//md.addAttribute("FinUserProfiles", loginServices.getFinUsersList());
+			md.addAttribute("FinUserProfiles", loginServices.getFinUsersList());
 			md.addAttribute("userProfile", loginServices.getUser(""));
 
 		}
@@ -456,958 +553,7 @@ public class XBRLNavigationController {
 		return "XBRLReportMaster";
 	}
 
-	@RequestMapping(value = "Audit", method = RequestMethod.GET)
-	public String audit(Model md, HttpServletRequest req) {
-
-		String userid = (String) req.getSession().getAttribute("USERID");
-		// Logging Navigation
-		loginServices.SessionLogging("AUDIT", "M11", req.getSession().getId(), userid, req.getRemoteAddr(), "ACTIVE");
-
-		LocalDateTime localDateTime = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-
-		md.addAttribute("menu", "Audit");
-		md.addAttribute("auditlogs", reportServices.getAuditLog(
-				Date.from(localDateTime.plusDays(-5).atZone(ZoneId.systemDefault()).toInstant()), new Date()));
-		return "XBRLAudit";
-	}
-
-	@RequestMapping(value = "Userlog", method = RequestMethod.GET)
-	public String userlog(Model md, HttpServletRequest req) {
-
-		String userid = (String) req.getSession().getAttribute("USERID");
-		// Logging Navigation
-		loginServices.SessionLogging("USERLOG", "M4", req.getSession().getId(), userid, req.getRemoteAddr(), "ACTIVE");
-
-		LocalDateTime localDateTime = new Date().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-
-		md.addAttribute("menu", "Userlog");
-		md.addAttribute("userlog", loginServices.getUserLog(
-				Date.from(localDateTime.plusDays(-5).atZone(ZoneId.systemDefault()).toInstant()), new Date()));
-
-		return "XBRLUserLogs";
-	}
-
-	@RequestMapping(value = "XBRLReports", method = RequestMethod.GET)
-	public String xbrlrep(Model md, HttpServletRequest req) {
-
-		md.addAttribute("menu", "XBRLReports");
-
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-
-		md.addAttribute("reportlist", reportServices.getReportsList(domainid));
-		return "XBRLReports";
-	}
-
-	@RequestMapping(value = "XBRLFileUpload", method = RequestMethod.GET)
-	public String xbrlFileUpload(Model md, HttpServletRequest req) {
-
-		String userid = (String) req.getSession().getAttribute("USERID");
-		// Logging Navigation
-		loginServices.SessionLogging("FILEUPLOAD", "M10", req.getSession().getId(), userid, req.getRemoteAddr(),
-				"ACTIVE");
-
-		md.addAttribute("menu", "XBRLFileUpload");
-
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-
-		md.addAttribute("reportlist", reportServices.getFileUploadList());
-		return "XBRLFileUpload";
-	}
-
-	@RequestMapping(value = "FileUploadRL", method = RequestMethod.GET)
-	public String FileUploadReturn(Model md, HttpServletRequest req) {
-
-		String userid = (String) req.getSession().getAttribute("USERID");
-		// Logging Navigation
-		loginServices.SessionLogging("FILEUPLOAD", "M10", req.getSession().getId(), userid, req.getRemoteAddr(),
-				"ACTIVE");
-
-		md.addAttribute("menu", "FileUpload");
-
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-
-		md.addAttribute("reportlist", reportServices.getFileUploadList());
-		return "FileUploadRL";
-	}
-
-	@RequestMapping(value = "XBRLArchives", method = RequestMethod.GET)
-	public String xbrlarch(Model md, HttpServletRequest req) {
-
-		String userid = (String) req.getSession().getAttribute("USERID");
-
-		// Logging Navigation
-		loginServices.SessionLogging("ARCHREPORTS", "M9", req.getSession().getId(), userid, req.getRemoteAddr(),
-				"ACTIVE");
-
-		md.addAttribute("menu", "XBRLArchives");
-
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-
-		md.addAttribute("reportlist", reportServices.getArchReportsList(domainid));
-
-		return "XBRLArchive";
-	}
-
-	@RequestMapping(value = "MISReports", method = RequestMethod.GET)
-	public String xbrlMISReports(Model md, HttpServletRequest req) {
-
-		String userid = (String) req.getSession().getAttribute("USERID");
-
-		// Logging Navigation
-		loginServices.SessionLogging("MISREPORTS", "M12", req.getSession().getId(), userid, req.getRemoteAddr(),
-				"ACTIVE");
-
-		md.addAttribute("menu", "MISReports");
-
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-
-		md.addAttribute("reportlist", reportServices.getMISReportsList(domainid));
-
-		return "XBRLMISReports";
-	}
-
-	@RequestMapping(value = "Finuserdata", method = RequestMethod.GET)
-	public ModelAndView Finuserdata(@RequestParam String userid) {
-		ModelAndView mv = new ModelAndView("XBRLUserprofile::finuserapply");
-		mv.addObject("formmode", "add");
-		mv.addObject("userProfile", loginServices.getFinUser(userid));
-		return mv;
-
-	}
-
-	@RequestMapping(value = "createUser", method = RequestMethod.POST)
-	@ResponseBody
-	public String createUser(@RequestParam("formmode") String formmode, @ModelAttribute UserProfile userprofile,
-			Model md, HttpServletRequest rq) {
-		String userid = (String) rq.getSession().getAttribute("USERID");
-		String msg = loginServices.addUser(userprofile, formmode, userid);
-
-		return msg;
-
-	}
-
-	@RequestMapping(value = "verifyUser", method = RequestMethod.POST)
-	@ResponseBody
-	public String verifyUser(@ModelAttribute UserProfile userprofile, Model md, HttpServletRequest rq) {
-		String userid = (String) rq.getSession().getAttribute("USERID");
-		String msg = loginServices.verifyUser(userprofile, userid);
-
-		return msg;
-
-	}
-
-	@RequestMapping(value = "passwordReset", method = RequestMethod.POST)
-	@ResponseBody
-	public String passwordReset(@ModelAttribute UserProfile userprofile, Model md, HttpServletRequest rq) {
-		String userid = (String) rq.getSession().getAttribute("USERID");
-		String msg = loginServices.passwordReset(userprofile, userid);
-
-		return msg;
-
-	}
-
-	@RequestMapping(value = "changePassword", method = RequestMethod.POST)
-	@ResponseBody
-	public String changePassword(@RequestParam("oldpass") String oldpass, @RequestParam("newpass") String newpass,
-			Model md, HttpServletRequest rq) {
-		String userid = (String) rq.getSession().getAttribute("USERID");
-		String msg = loginServices.changePassword(oldpass, newpass, userid);
-
-		return msg;
-
-	}
-
-	@RequestMapping(value = "updateValidity", method = RequestMethod.POST)
-	@ResponseBody
-	public String updateValidity(@RequestParam("reportid") String reportid, String valid, HttpServletRequest rq) {
-
-		String userid = (String) rq.getSession().getAttribute("USERID");
-
-		return reportServices.updateValidity(reportid, valid, userid);
-
-	}
-
-	@RequestMapping(value = "userLogs/Download", method = RequestMethod.GET)
-	@ResponseBody
-	public InputStreamResource UserDownload(HttpServletResponse response, @RequestParam String fromdate,
-			@RequestParam String todate) throws IOException, SQLException {
-		response.setContentType("application/octet-stream");
-
-		InputStreamResource resource = null;
-
-		try {
-			Date fromdate2 = new SimpleDateFormat("dd-MM-yyyy").parse(fromdate);
-			Date todate2 = new SimpleDateFormat("dd-MM-yyyy").parse(todate);
-			File repfile = loginServices.getUserLogFile(fromdate2, todate2);
-			response.setHeader("Content-Disposition", "attachment; filename=" + repfile.getName());
-			resource = new InputStreamResource(new FileInputStream(repfile));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return resource;
-	}
-
-	@RequestMapping(value = "auditLogs/Download", method = RequestMethod.GET)
-	@ResponseBody
-	public InputStreamResource auditDownload(HttpServletResponse response, @RequestParam String fromdate,
-			@RequestParam String todate) throws IOException, SQLException {
-		response.setContentType("application/octet-stream");
-
-		InputStreamResource resource = null;
-
-		try {
-			Date fromdate2 = new SimpleDateFormat("dd-MM-yyyy").parse(fromdate);
-			Date todate2 = new SimpleDateFormat("dd-MM-yyyy").parse(todate);
-			File repfile = reportServices.getAuditLogFile(fromdate2, todate2);
-			response.setHeader("Content-Disposition", "attachment; filename=" + repfile.getName());
-			resource = new InputStreamResource(new FileInputStream(repfile));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return resource;
-	}
-
-	@RequestMapping(value = "repCodeMain/Download", method = RequestMethod.GET)
-	@ResponseBody
-	public InputStreamResource repCodeMainDownload(HttpServletResponse response, @RequestParam String function)
-			throws IOException, SQLException {
-
-		response.setContentType("application/octet-stream");
-
-		logger.info("Function Selected--->>>" + function);
-
-		InputStreamResource resource = null;
-
-		try {
-
-			File repfile = reportCodeMappingService.getDownloadFile(function);
-			response.setHeader("Content-Disposition", "attachment; filename=" + repfile.getName());
-			resource = new InputStreamResource(new FileInputStream(repfile));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return resource;
-	}
-
-	@RequestMapping(value = "logoutUpdate", method = RequestMethod.POST)
-	@ResponseBody
-	public String logoutUpdate(HttpServletRequest req) {
-
-		String msg;
-
-		String userid = (String) req.getSession().getAttribute("USERID");
-
-		try {
-			logger.info("Updating Logout");
-			loginServices.SessionLogging("LOGOUT", "M0", req.getSession().getId(), userid, req.getRemoteAddr(),
-					"IN-ACTIVE");
-			msg = "success";
-		} catch (Exception e) {
-			e.printStackTrace();
-			msg = "failed";
-		}
-		return msg;
-	}
-
-	@PostMapping("repCodeMain/Upload")
-	@ResponseBody
-	public String FileUpload(@RequestParam("file") MultipartFile file, HttpServletRequest rq)
-			throws IOException, SQLException {
-
-		String msg = "";
-
-		String userid = (String) rq.getSession().getAttribute("USERID");
-		msg = reportCodeMappingService.processUploadFiles(file, userid);
-
-		return msg;
-	}
-
-	@RequestMapping(value = "CustomReports", method = { RequestMethod.GET, RequestMethod.POST })
-	public String CustomReports(@RequestParam(required = false) String formmode,
-			@RequestParam(required = false) String rpt_ref_no, @RequestParam(required = false) String userid,
-			@RequestParam(required = false) Optional<Integer> page,
-			@RequestParam(value = "size", required = false) Optional<Integer> size, Model md, HttpServletRequest req) {
-
-		int currentPage = page.orElse(0);
-		int pageSize = size.orElse(Integer.parseInt(pagesize));
-
-		System.out.println("page" + currentPage);
-		System.out.println("page" + pageSize);
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-		// md.addAttribute("AMLRoleMenu", AccessRoleService.getRoleMenu(roleId));
-		if (formmode == null || formmode.equals("list")) {
-			md.addAttribute("menuname", "Reports Parameter");
-			md.addAttribute("formmode", "list"); // to set which form - valid values are "edit" , "add" & "list"
-			md.addAttribute("repParameter", custReportsParmsRepo.findAllCustom(PageRequest.of(currentPage, pageSize)));
-
-		} else if (formmode.equals("add")) {
-
-			md.addAttribute("menuname", "Reports Parameter - Add");
-			md.addAttribute("formmode", "add");
-
-		} else if (formmode.equals("edit")) {
-
-			md.addAttribute("menuname", "Reports Parameter - Edit");
-			md.addAttribute("formmode", "edit");
-			md.addAttribute("Parameter", customRepParamServices.getParam(rpt_ref_no));
-
-		} else if (formmode.equals("verify")) {
-
-			md.addAttribute("menuname", "Reports Parameter - Verify");
-			md.addAttribute("formmode", "verify");
-			md.addAttribute("Parameter", customRepParamServices.getParam(rpt_ref_no));
-
-		} else if (formmode.equals("view")) {
-
-			md.addAttribute("menuname", "Reports Parameter - Inquiry");
-			md.addAttribute("formmode", "view");
-			md.addAttribute("Parameter", customRepParamServices.getParam(rpt_ref_no));
-
-		}
-
-		return "CustomRepParameter";
-	}
-
-	@RequestMapping(value = "createRepParam", method = RequestMethod.POST)
-	@ResponseBody
-	public String createRepParam(@RequestParam("formmode") String formmode,
-			@ModelAttribute CustomReportParms customReportParms, Model md, HttpServletRequest rq)
-			throws IOException, SQLException {
-
-		String msg = customRepParamServices.customParam(customReportParms, formmode);
-		md.addAttribute("adminflag", "adminflag");
-
-		return msg;
-
-	}
-
-	@RequestMapping(value = "CustomRepGen", method = { RequestMethod.GET, RequestMethod.POST })
-	public String CustomRepGen(@RequestParam(required = false) String formmode,
-			@RequestParam(required = false) String userid, @RequestParam(required = false) Optional<Integer> page,
-			@RequestParam(value = "size", required = false) Optional<Integer> size, Model md, HttpServletRequest req) {
-
-		int currentPage = page.orElse(0);
-		int pageSize = size.orElse(Integer.parseInt(pagesize));
-		String userid1 = (String) req.getSession().getAttribute("USERID");
-
-		System.out.println("page" + currentPage);
-		System.out.println("page" + pageSize);
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-		// md.addAttribute("AMLRoleMenu", AccessRoleService.getRoleMenu(roleId));
-		if (formmode == null || formmode.equals("list")) {
-			md.addAttribute("menu", "Report Generator");
-			md.addAttribute("userProfile", loginServices.getUser(userid1));
-			md.addAttribute("formmode", "list"); // to set which form - valid values are "edit" , "add" & "list"
-			md.addAttribute("repParameter", custReportsParmsRepo.findAllCustom(PageRequest.of(currentPage, pageSize)));
-		}
-
-		return "CustomRepGeneration";
-	}
-
-	@RequestMapping(value = "CustomRepDown", method = { RequestMethod.GET, RequestMethod.POST })
-	public String CustomRepDown(@RequestParam(required = false) String formmode,
-			@RequestParam(required = false) String userid, @RequestParam(required = false) Optional<Integer> page,
-			@RequestParam(value = "size", required = false) Optional<Integer> size, Model md, HttpServletRequest req) {
-
-		int currentPage = page.orElse(0);
-		int pageSize = size.orElse(Integer.parseInt(pagesize));
-		String userid1 = (String) req.getSession().getAttribute("USERID");
-
-		System.out.println("page" + currentPage);
-		System.out.println("page" + pageSize);
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-		// md.addAttribute("AMLRoleMenu", AccessRoleService.getRoleMenu(roleId));
-		if (formmode == null || formmode.equals("list")) {
-			md.addAttribute("menu", "Report Generator");
-			md.addAttribute("userProfile", loginServices.getUser(userid1));
-			md.addAttribute("formmode", "list"); // to set which form - valid values are "edit" , "add" & "list"
-			md.addAttribute("repParameter", customRepDownloadRep.findAllCustom(PageRequest.of(currentPage, pageSize)));
-		}
-
-		return "CustomRepDownload";
-	}
-
-	@RequestMapping(value = "ExecuteRep", method = { RequestMethod.GET, RequestMethod.POST })
-	public String ExecuteRep(@RequestParam(value = "ref_id", required = false) String ref_id,
-			@RequestParam(value = "Param1", required = false) String input1,
-			@RequestParam(value = "Param1", required = false) String input2,
-			@RequestParam(value = "Param1", required = false) String input3,
-			@RequestParam(value = "Param1", required = false) String input4,
-			@RequestParam(value = "Param1", required = false) String input5,
-			@RequestParam(required = false) String userid, @RequestParam(required = false) Optional<Integer> page,
-			@RequestParam(value = "size", required = false) Optional<Integer> size, Model md, HttpServletRequest req)
-			throws SQLException {
-		int currentPage = page.orElse(0);
-		int pageSize = size.orElse(Integer.parseInt(pagesize));
-
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-		// md.addAttribute("AMLRoleMenu", AccessRoleService.getRoleMenu(roleId));
-		md.addAttribute("adminflag", "adminflag");
-
-		try {
-			md.addAttribute("formmode", "list"); // to set which form - valid values are "edit" , "add" & "list"
-			md.addAttribute("headers", customerRepGenServices.getHeaders(ref_id));
-			md.addAttribute("repList",
-					customerRepGenServices.parameterlistwithdecode(ref_id, PageRequest.of(currentPage, pageSize)));
-
-			CustomReportParms up = customReportsParmsRepo.findByIdcustom(ref_id);
-			md.addAttribute("CustomReportParam", up);
-
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		return "ReportExecutePage";
-
-	}
-
-	/**************************************************************************
-	 * RBS REPORTS
-	 **************************************************************************/
-
-	@RequestMapping(value = "rbsreports", method = { RequestMethod.GET, RequestMethod.POST })
-	public String RbsReports(Model md, HttpServletRequest req) {
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-
-		// md.addAttribute("reportvalue", "RBS Reports");
-		// md.addAttribute("reportid", "RBSReports");
-
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-		md.addAttribute("reportsflag", "reportsflag");
-		md.addAttribute("menu", "RBS Report");
-
-		md.addAttribute("reportlist", rbsReportlist.getReportList());
-
-		return "RBS_AML/RBSReports";
-	}
-
-	@RequestMapping(value = "rrreports", method = { RequestMethod.GET, RequestMethod.POST })
-	public String RRReports(Model md, HttpServletRequest req) {
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-
-		// md.addAttribute("reportvalue", "RBS Reports");
-		// md.addAttribute("reportid", "RBSReports");
-
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-		md.addAttribute("reportsflag", "reportsflag");
-		md.addAttribute("menu", "RR Report");
-
-		md.addAttribute("reportlist", rrReportlist.getReportList());
-		// md.addAttribute("reportlist", rrReportlist.getReportListBASEL());
-
-		return "RR/RRReports";
-	}
-
-
-	@RequestMapping(value = "rlreports", method = { RequestMethod.GET, RequestMethod.POST })
-	public String RLReports(Model md, HttpServletRequest req) {
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-
-		// md.addAttribute("reportvalue", "RBS Reports");
-		// md.addAttribute("reportid", "RBSReports");
-
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-		md.addAttribute("reportsflag", "reportsflag");
-		md.addAttribute("menu", "Restructured Loan Report");
-
-		md.addAttribute("reportlist", rbsReportlist.getReportListRL());
-
-		return "RBS_AML/RBSReports";
-	}
-
-	@RequestMapping(value = "RBSDataMaintenance", method = { RequestMethod.GET, RequestMethod.POST })
-	public String RBSDataMaintenance(Model md, HttpServletRequest req) {
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-
-		// md.addAttribute("reportvalue", "RBS Reports");
-		// md.addAttribute("reportid", "RBSReports");
-
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-		md.addAttribute("reportsflag", "reportsflag");
-		md.addAttribute("menu", "RBS Data Maintenance");
-
-		md.addAttribute("RepMaster", rbsReportlist.getReportList());
-
-		return "RBS_AML/RBSDataMaintenance";
-	}
-
-	@RequestMapping(value = "RBSArchival", method = { RequestMethod.GET, RequestMethod.POST })
-	public String RBSArchival(Model md, HttpServletRequest req) {
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-
-		// md.addAttribute("reportvalue", "RBS Reports");
-		// md.addAttribute("reportid", "RBSReports");
-
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-		md.addAttribute("reportsflag", "reportsflag");
-		md.addAttribute("menu", "RBS Archival");
-
-		md.addAttribute("reportlist", rbsReportlist.getReportList());
-
-		return "RBS_AML/RBSArchival";
-	}
-
-	@RequestMapping(value = "CRRBSarchival", method = { RequestMethod.GET, RequestMethod.POST })
-	public String CRRBSarchival(Model md, HttpServletRequest req) {
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-
-		// md.addAttribute("reportvalue", "RBS Reports");
-		// md.addAttribute("reportid", "RBSReports");
-
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-		md.addAttribute("reportsflag", "reportsflag");
-		md.addAttribute("menu", "CR RBS Archival");
-
-		md.addAttribute("reportlist", rbsReportlist.getReportListCR());
-
-		return "CR_RBS/CRRBSArchival";
-	}
-
-	@RequestMapping(value = "LRArchival", method = { RequestMethod.GET, RequestMethod.POST })
-	public String LRArchival(Model md, HttpServletRequest req) {
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-
-		// md.addAttribute("reportvalue", "RBS Reports");
-		// md.addAttribute("reportid", "RBSReports");
-
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-		md.addAttribute("reportsflag", "reportsflag");
-		md.addAttribute("menu", "LR RBS Archival");
-
-		md.addAttribute("reportlist", rbsReportlist.getReportListLR());
-
-		return "LR_RBS/LRRBSArchival";
-	}
-
-	@RequestMapping(value = "MRArchival", method = { RequestMethod.GET, RequestMethod.POST })
-	public String MRArchival(Model md, HttpServletRequest req) {
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-
-		// md.addAttribute("reportvalue", "RBS Reports");
-		// md.addAttribute("reportid", "RBSReports");
-
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-		md.addAttribute("reportsflag", "reportsflag");
-		md.addAttribute("menu", "MR RBS Archival");
-
-		md.addAttribute("reportlist", rbsReportlist.getReportListMR());
-
-		return "MR_RBS/MRRBSArchival";
-	}
-
-	@RequestMapping(value = "rbsarchivalform", method = { RequestMethod.GET, RequestMethod.POST })
-	public String Rbsarchivalfrom(Model md, @RequestParam(value = "reportid", required = false) String reportid,
-			@RequestParam(value = "repdesc", required = false) String repdesc, HttpServletRequest req) {
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-		md.addAttribute("reportsflag", "reportsflag");
-		md.addAttribute("menu", "RBS Report");
-		md.addAttribute("datemodal", "datefilter");
-		md.addAttribute("reportid", reportid);
-		md.addAttribute("repdesc", repdesc);
-		md.addAttribute("reportmodal", "Y");
-		md.addAttribute("reportDATE", t1CurProdServicesRepo.getReportList());
-		md.addAttribute("reportlist", rbsReportlist.getReportList());
-
-		return "RBS_AML/RBSArchival";
-	}
-
-	@RequestMapping(value = "ORRBSarchival", method = { RequestMethod.GET, RequestMethod.POST })
-	public String ORRBSarchival(Model md, HttpServletRequest req) {
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-
-		// md.addAttribute("reportvalue", "RBS Reports");
-		// md.addAttribute("reportid", "RBSReports");
-
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-		md.addAttribute("reportsflag", "reportsflag");
-		md.addAttribute("menu", "Operating Risk Archival");
-
-		md.addAttribute("reportlist", rbsReportlist.getReportListOR());
-
-		return "OR_RBS/ORRBSArchival";
-	}
-
 	
-	@RequestMapping(value = "crrbsreports", method = { RequestMethod.GET, RequestMethod.POST })
-	public String CRRbsReports(Model md, HttpServletRequest req) {
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-
-		// md.addAttribute("reportvalue", "RBS Reports");
-		// md.addAttribute("reportid", "RBSReports");
-
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-		md.addAttribute("reportsflag", "reportsflag");
-		md.addAttribute("menu", "CR RBS Report");
-
-		md.addAttribute("reportlist", rbsReportlist.getReportListCR());
-
-		return "RBS_AML/RBSReports";
-	}
-
-	@RequestMapping(value = "ifrs9quan", method = { RequestMethod.GET, RequestMethod.POST })
-	public String IFRSReports(Model md, HttpServletRequest req) {
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-
-		// md.addAttribute("reportvalue", "RBS Reports");
-		// md.addAttribute("reportid", "RBSReports");
-
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-		md.addAttribute("reportsflag", "reportsflag");
-		md.addAttribute("menu", "IFRS Quantitative Report");
-
-		md.addAttribute("reportlist", rbsReportlist.getReportListIFRSQUAN());
-
-		return "RBS_AML/RBSReports";
-	}
-
-	@RequestMapping(value = "ifrs9quli", method = { RequestMethod.GET, RequestMethod.POST })
-	public String IFRSqualReports(Model md, HttpServletRequest req) {
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-		md.addAttribute("reportsflag", "reportsflag");
-		md.addAttribute("menu", "IFRS Qualitative Report");
-
-		md.addAttribute("reportlist", rbsReportlist.getReportListIFRSQUALI());
-
-		return "RBS_AML/RBSReports";
-	}
-
-	@RequestMapping(value = "ReconFileUpload", method = { RequestMethod.GET, RequestMethod.POST })
-	public String Debit_Card_Fileupload(Model md, HttpServletRequest req) {
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-
-		// md.addAttribute("reportvalue", "RBS Reports");
-		// md.addAttribute("reportid", "RBSReports");
-		md.addAttribute("menu", "ReconFileUpload");
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-
-		return "BRECON/ReconFileupload";
-	}
-
-	@RequestMapping(value = "RBSReportGeneration", method = { RequestMethod.GET, RequestMethod.POST })
-	public String RBSReportGeneration(Model md, HttpServletRequest req) {
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-		md.addAttribute("reportvalue", "RBS Report Generation");
-		md.addAttribute("reportid", "RBSReportGeneration");
-		md.addAttribute("menu", "RBS Report Generation");
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-		md.addAttribute("reportsflag", "reportsflag");
-
-		return "RBS_AML/RBSReportGeneration";
-	}
-
-	@RequestMapping(value = "RBSORReportGeneration", method = { RequestMethod.GET, RequestMethod.POST })
-	public String RBSORReportGeneration(Model md, HttpServletRequest req) {
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-		md.addAttribute("reportvalue", "Operating Risk Generation");
-		md.addAttribute("reportid", "ORReportGeneration");
-		md.addAttribute("menu", "Operating Risk Generation");
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-		md.addAttribute("reportsflag", "reportsflag");
-
-		return "RBS_AML/RBSReportGeneration";
-
-	}
-
-	@RequestMapping(value = "RBSLRReportGeneration", method = { RequestMethod.GET, RequestMethod.POST })
-	public String RBSLRReportGeneration(Model md, HttpServletRequest req) {
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-		md.addAttribute("reportvalue", "Operating Risk Generation");
-		md.addAttribute("reportid", "LRReportGeneration");
-		md.addAttribute("menu", "Liquidity Risk Generation");
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-		md.addAttribute("reportsflag", "reportsflag");
-
-		return "RBS_AML/RBSReportGeneration";
-
-	}
-
-	@RequestMapping(value = "RBSMRReportGeneration", method = { RequestMethod.GET, RequestMethod.POST })
-	public String RBSMRReportGeneration(Model md, HttpServletRequest req) {
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-		md.addAttribute("reportvalue", "Market Risk Generation");
-		md.addAttribute("reportid", "MRReportGeneration");
-		md.addAttribute("menu", "Market Risk Generation");
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-		md.addAttribute("reportsflag", "reportsflag");
-
-		return "RBS_AML/RBSReportGeneration";
-
-	}
-
-	@RequestMapping(value = "RBSCRReportGeneration", method = { RequestMethod.GET, RequestMethod.POST })
-	public String RBSCRReportGeneration(Model md, HttpServletRequest req) {
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-		md.addAttribute("reportvalue", "Operating Risk Generation");
-		md.addAttribute("reportid", "CRReportGeneration");
-		md.addAttribute("menu", "Credit Risk Generation");
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-		md.addAttribute("reportsflag", "reportsflag");
-
-		return "RBS_AML/RBSReportGeneration";
-
-	}
-
-	@RequestMapping(value = "CREDITGENERATION", method = { RequestMethod.GET, RequestMethod.POST })
-	public String CREDITReportGeneration(Model md, HttpServletRequest req) {
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-		md.addAttribute("reportvalue", "Report Generation");
-		md.addAttribute("reportid", "ReportGeneration");
-		md.addAttribute("menu", "Report Generation");
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-		md.addAttribute("reportsflag", "reportsflag");
-
-		return "RL_RBS/ReportGeneration";
-
-	}
-
-	@RequestMapping(value = "RBSCONTACT", method = RequestMethod.GET)
-	public ModelAndView RBSCONTACTDETAIL(Model md, HttpServletRequest req,
-			@RequestParam(value = "page", required = false) Optional<Integer> page,
-			@RequestParam(value = "size", required = false) Optional<Integer> size) {
-		String userid = (String) req.getSession().getAttribute("USERID");
-
-		int currentPage = page.orElse(0);
-		int pageSize = size.orElse(Integer.parseInt(pagesize));
-
-		logger.info("xbrlnavigationcontroller -> glSubHead()");
-
-		md.addAttribute("menu", "GlSubHead");
-		md.addAttribute("displaymode", "detail");
-		ModelAndView mv = glSubHeadConfigService.RBSCONTACTLIST(PageRequest.of(currentPage, pageSize));
-		// md.addAttribute("singledetail", new BankMaster());
-
-		return mv;
-	}
-
-	@RequestMapping(value = "rbsValidations", method = { RequestMethod.GET, RequestMethod.POST })
-	public String rbsValidations(@RequestParam(value = "reportDate", required = false) String reportDate, Model md,
-			HttpServletRequest req) {
-
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-
-		if (reportDate == null) {
-			md.addAttribute("reportvalue", "RBS Report Generation");
-			md.addAttribute("reportid", "rbsReportGeneration");
-			reportDate = reportDate;
-			md.addAttribute("reportDate1", reportDate);
-			// md.addAttribute("reportDate1", reportValidationsRepo.getCurrentQtr(new
-			// SimpleDateFormat("dd/MM/yyyy")));
-			// reportDate = dateFormat.format(new Date());
-		} else {
-			reportDate = reportDate;
-			md.addAttribute("reportDate1", reportDate);
-			md.addAttribute("reportvalue", "RBS Report Generation");
-			md.addAttribute("reportid", "rbsReportGeneration");
-		}
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-		md.addAttribute("reportsflag", "reportsflag");
-		md.addAttribute("menu", "RBS Validation Report");
-		md.addAttribute("testDate", reportValidationsRepo.getCurrentQtr(new SimpleDateFormat("dd/MM/yyyy")));
-		md.addAttribute("reportvalue", "RBS Report Generation");
-		md.addAttribute("reportid", "rbsReportGeneration");
-
-		md.addAttribute("RepValid", reportValidationsRepo.getValidationList());
-
-		// md.addAttribute("reportvalue", "File Upload");
-
-		return "RBS_AML/RBSValidations";
-	}
-
-	@RequestMapping(value = "rbsValidationsChk", method = RequestMethod.POST)
-	@ResponseBody
-	public ValidationResponse rbsValidationsChk(@RequestParam("srl_no") String srl_no,
-			@RequestParam("report_date") String report_date, @ModelAttribute ReportValidations reportValidations,
-			Model md, HttpServletRequest rq) throws ParseException {
-		logger.info("rbsValidationsChk:  Controller");
-		ValidationResponse msg = rbsValidationservices.chkRBSValidations(reportValidations, srl_no, report_date);
-		md.addAttribute("reportsflag", "reportsflag");
-
-		return msg;
-
-	}
-
-	@RequestMapping(value = "rrrbsreports", method = { RequestMethod.GET, RequestMethod.POST })
-	public String rrrbsreports(Model md, HttpServletRequest req) {
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-
-		// md.addAttribute("reportvalue", "RBS Reports");
-		// md.addAttribute("reportid", "RBSReports");
-
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-		md.addAttribute("reportsflag", "reportsflag");
-		// md.addAttribute("menu", "RBS Report");
-
-		md.addAttribute("reportlist", rbsReportlist.getReportListRR());
-
-		return "RR_RBS/RR_RBSReports";
-	}
-
-	@RequestMapping(value = "LRrbsreports", method = { RequestMethod.GET, RequestMethod.POST })
-	public String LRrbsreports(Model md, HttpServletRequest req) {
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-
-		// md.addAttribute("reportvalue", "RBS Reports");
-		// md.addAttribute("reportid", "RBSReports");
-
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-		md.addAttribute("reportsflag", "reportsflag");
-		md.addAttribute("menu", "LR RBS Report");
-
-		md.addAttribute("reportlist", rbsReportlist.getReportListLR());
-
-		return "RBS_AML/RBSReports";
-	}
-
-	@RequestMapping(value = "MRrbsreports", method = { RequestMethod.GET, RequestMethod.POST })
-	public String MRrbsreports(Model md, HttpServletRequest req) {
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-
-		// md.addAttribute("reportvalue", "RBS Reports");
-		// md.addAttribute("reportid", "RBSReports");
-
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-		md.addAttribute("reportsflag", "reportsflag");
-		md.addAttribute("menu", "MR RBS Report");
-
-		md.addAttribute("reportlist", rbsReportlist.getReportListMR());
-
-		return "MR_RBS/MR_RBSReport";
-	}
-
-	@RequestMapping(value = "EPINOutstanding", method = { RequestMethod.GET, RequestMethod.POST })
-	public String EPINOutstanding(Model md, HttpServletRequest req) {
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-
-		// md.addAttribute("reportvalue", "RBS Reports");
-		// md.addAttribute("reportid", "RBSReports");
-
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-		md.addAttribute("reportsflag", "reportsflag");
-		md.addAttribute("menu", "LR RBS Report");
-
-		md.addAttribute("reportlist", rbsReportlist.getReportListLR());
-
-		return "RBS_AML/RBSReports";
-	}
-
-	@RequestMapping(value = "RBS_RR_ReportGeneration", method = { RequestMethod.GET, RequestMethod.POST })
-	public String RBS_RR_ReportGeneration(Model md, HttpServletRequest req) {
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-		md.addAttribute("reportvalue", "Operating Risk Generation");
-		md.addAttribute("reportid", "RRReportGeneration");
-		md.addAttribute("menu", "Residual Risks Generation");
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-		md.addAttribute("reportsflag", "reportsflag");
-
-		return "RBS_AML/RBSReportGeneration";
-
-	}
-
-	@RequestMapping(value = "RBSAlertParameters", method = { RequestMethod.GET, RequestMethod.POST })
-	public String AMLAlertManagement(@RequestParam(required = false) String formmode,
-			@RequestParam(required = false) String srlno, @RequestParam(required = false) Optional<Integer> page,
-			@RequestParam(value = "size", required = false) Optional<Integer> size, Model md, HttpServletRequest req) {
-
-		int currentPage = page.orElse(0);
-		int pageSize = size.orElse(Integer.parseInt(pagesize));
-
-		if (formmode == null || formmode.equals("list")) {
-
-			md.addAttribute("menu", "BRBSAlertParameters");
-			md.addAttribute("menuname", "Alert Parameters");
-			md.addAttribute("formmode", "list"); // to set which form - valid values are "edit" , "add" & "list"
-			/*
-			 * md.addAttribute("RuleLists",
-			 * ruleenginerepository.findAll(PageRequest.of(currentPage, pageSize)));
-			 */
-			md.addAttribute("AlertParameterList",
-					alertmanagementrepository.alertlist(PageRequest.of(currentPage, pageSize)));
-		} else if (formmode.equals("add")) {
-			md.addAttribute("formmode", formmode);
-			md.addAttribute("AlertSrlNo", alertservices.getSrlNoValue());
-		} else if (formmode.equals("edit")) {
-			md.addAttribute("formmode", formmode);
-			// md.addAttribute("domains", userProfileDao.getDomainList());
-			md.addAttribute("AlertParameter", alertservices.getSrlNo(srlno));
-
-		} else if (formmode.equals("view")) {
-			md.addAttribute("formmode", formmode);
-			md.addAttribute("AlertParameter", alertservices.getSrlNo(srlno));
-
-		} else if (formmode.equals("delete")) {
-			md.addAttribute("AlertParameter", alertservices.getSrlNo(srlno));
-			md.addAttribute("formmode", "delete"); // to set which form - valid values are "edit" , "add" & "list"
-
-		}
-		md.addAttribute("adminflag", "adminflag");
-		md.addAttribute("parameterflag", "parameterflag");
-
-		return "AMLAlertParameters";
-	}
-
-	@RequestMapping(value = "createAlert", method = RequestMethod.POST)
-	@ResponseBody
-	public String createRule(@RequestParam("formmode") String formmode,
-			@ModelAttribute AlertManagementEntity alertparam, Model md, HttpServletRequest rq) {
-		String userid = (String) rq.getSession().getAttribute("USERID");
-
-		String msg = alertservices.addAlert(alertparam, formmode, userid);
-
-		return msg;
-
-	}
-
-	@RequestMapping(value = "FileUploadCR_RBS", method = RequestMethod.GET)
-	public String FileUploadReturnCR_RBS(Model md, HttpServletRequest req) {
-
-		String userid = (String) req.getSession().getAttribute("USERID");
-		// Logging Navigation
-		loginServices.SessionLogging("FILEUPLOAD", "M10", req.getSession().getId(), userid, req.getRemoteAddr(),
-				"ACTIVE");
-
-		md.addAttribute("menu", "FileUpload");
-
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-
-		md.addAttribute("reportlist", reportServices.getFileUploadListCR_RBS());
-		return "FileUploadRL";
-	}
-	@RequestMapping(value = "Monthly", method = { RequestMethod.GET, RequestMethod.POST })
-	public String monthly(Model md, HttpServletRequest req) {
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-
-		// md.addAttribute("reportvalue", "RBS Reports");
-		// md.addAttribute("reportid", "RBSReports");
-
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-		md.addAttribute("reportsflag", "reportsflag");
-		md.addAttribute("menu", " Monthly  -RR Report");
- 
-		// md.addAttribute("reportlist", rrReportlist.getReportList());
-		md.addAttribute("reportlist", rrReportlist.getReportListmonthly());
-
-		return "RR/RRReports";
-	}
-	@RequestMapping(value = "Quarterly", method = { RequestMethod.GET, RequestMethod.POST })
-	public String Quarterly(Model md, HttpServletRequest req) {
-		String roleId = (String) req.getSession().getAttribute("ROLEID");
-
-		// md.addAttribute("reportvalue", "RBS Reports");
-		// md.addAttribute("reportid", "RBSReports");
-
-		String domainid = (String) req.getSession().getAttribute("DOMAINID");
-		md.addAttribute("reportsflag", "reportsflag");
-		md.addAttribute("menu", " Quarterly -RR Report");
- 
-		// md.addAttribute("reportlist", rrReportlist.getReportList());
-		md.addAttribute("reportlist", rrReportlist.getReportListquarterly());
-
-		return "RR/RRReports";
-	}
 
 
 }
