@@ -67,8 +67,6 @@ import com.bornfire.xbrl.services.AlertManagementServices;
 
 import com.bornfire.xbrl.services.BankServices;
 import com.bornfire.xbrl.services.CountryRiskServices;
-import com.bornfire.xbrl.services.CustomRepGeneratorServices;
-import com.bornfire.xbrl.services.CustomRepParamServices;
 import com.bornfire.xbrl.services.EtlServices;
 import com.bornfire.xbrl.services.GlSubHeadConfigService;
 import com.bornfire.xbrl.services.LoginServices;
@@ -79,6 +77,7 @@ import com.bornfire.xbrl.services.ReportCodeMappingService;
 import com.bornfire.xbrl.services.ReportServices;
 import com.bornfire.xbrl.services.ReportServices.ReportTitle;
 import com.bornfire.xbrl.services.AccessAndRolesServices;
+
 
 import net.sf.jasperreports.engine.JRException;
 
@@ -124,8 +123,6 @@ public class XBRLNavigationController {
 	@Autowired
 	GlSubHeadConfigService glSubHeadConfigService;
 
-	@Autowired
-	CustomRepGeneratorServices customerRepGenServices;
 
 	@Autowired
 	CustomReportsParmsRepo custReportsParmsRepo;
@@ -136,8 +133,6 @@ public class XBRLNavigationController {
 	@Autowired
 	CustomRepDownloadRep customRepDownloadRep;
 
-	@Autowired
-	CustomRepParamServices customRepParamServices;
 
 	@Autowired
 	RBSReportRepo rbsReportlist;
@@ -554,6 +549,10 @@ public class XBRLNavigationController {
 	}
 
 	
-
+	@RequestMapping(value = "Nostro_Account_Bal", method = RequestMethod.GET)
+	public String NostroAccountBal(Model md, HttpServletRequest req) {
+	
+		return "Nostro_Account_Bal";
+	}
 
 }
