@@ -48,6 +48,7 @@ import com.bornfire.xbrl.entities.CustomRepDownloadRep;
 import com.bornfire.xbrl.entities.CustomReportParms;
 import com.bornfire.xbrl.entities.CustomReportsParmsRepo;
 import com.bornfire.xbrl.entities.FinSolTb;
+import com.bornfire.xbrl.entities.FxRiskDataRepository;
 import com.bornfire.xbrl.entities.GenRefCodeMast;
 import com.bornfire.xbrl.entities.UserProfile;
 import com.bornfire.xbrl.entities.BRSS.AUDReconOs_Mirror;
@@ -101,6 +102,9 @@ public class XBRLNavigationController {
 	
 	@Autowired
 	NostroAccBalDataRepository nostroAccBalRepo;
+	
+	@Autowired
+	FxRiskDataRepository friskdataRepo;
 	
 	@Autowired
 	SessionFactory sessionFactory;
@@ -376,4 +380,12 @@ public class XBRLNavigationController {
 		return "Nostro_Account_Bal";
 	}
 
+	@RequestMapping(value = "Fx_Risk_Data", method = RequestMethod.GET)
+	public String Fxriskdata(Model md, HttpServletRequest req) {
+	
+		md.addAttribute("branchList", friskdataRepo.getlist());
+
+		return "Fx_Risk_Data";
+	}
+	
 }

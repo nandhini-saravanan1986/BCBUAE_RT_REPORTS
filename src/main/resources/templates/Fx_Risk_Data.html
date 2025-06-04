@@ -1,0 +1,530 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
+
+<!-- 
+CREATED BY	: KRISHNAPANDI MG 
+CREATED ON	: 25.05.2025
+PURPOSE		: Access the Modules by Role
+ -->
+ 
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" type="text/css"
+	href="/webjars/bootstrap/4.3.1/css/bootstrap.min.css"
+	th:href="@{/webjars/bootstrap/4.3.1/css/bootstrap.min.css}">
+<link rel="stylesheet" type="text/css"
+	href="/webjars/font-awesome/5.9.0/css/all.min.css"
+	th:href="@{/webjars/font-awesome/5.9.0/css/all.min.css}">
+<link rel="stylesheet" type="text/css"
+	href="/webjars/jquery-ui/1.12.1/jquery-ui.min.css"
+	th:href="@{/webjars/jquery-ui/1.12.1/jquery-ui.min.css}">
+<link rel="stylesheet" type="text/css"
+	href="/webjars/datatables/1.10.19/css/jquery.dataTables.min.css"
+	th:href="@{/webjars/datatables/1.10.19/css/jquery.dataTables.min.css}">
+<link rel="shortcut icon" th:href="@{/favicon.ico}" type="image/x-icon">
+<link rel="icon" th:href="@{/favicon.ico}" type="image/x-icon">
+
+<script src="/webjars/bootstrap/4.3.1/js/bootstrap.min.js"
+	th:src="@{/webjars/bootstrap/4.3.1/js/bootstrap.min.js}"></script>
+<script src="/webjars/popper.js/1.14.7/umd/popper.min.js"
+	th:src="@{/webjars/popper.js/1.14.7/umd/popper.min.js}"></script>
+<script src="/webjars/jquery/3.4.1/jquery.min.js"
+	th:src="@{/webjars/jquery/3.4.1/jquery.min.js}"></script>
+<script src="/webjars/jquery-ui/1.12.1/jquery-ui.min.js"
+	th:src="@{/webjars/jquery-ui/1.12.1/jquery-ui.min.js}"></script>
+
+<script src="/webjars/jquery-form/4.2.2/jquery.form.min.js"
+	th:src="@{/webjars/jquery-form/4.2.2/jquery.form.min.js}"></script>
+
+<script src="/webjars/jquery-validation/1.19.0/jquery.validate.min.js"
+	th:src="@{/webjars/jquery-validation/1.19.0/jquery.validate.min.js}"></script>
+
+<script src="/webjars/datatables/1.10.19/js/jquery.dataTables.min.js"
+	th:src="@{/webjars/datatables/1.10.19/js/jquery.dataTables.min.js}"></script>
+<script
+	src="/webjars/datatables/1.10.19/js/dataTables.bootstrap4.min.js"
+	th:src="@{/webjars/datatables/1.10.19/js/dataTables.bootstrap4.min.js}"></script>
+
+
+<style>
+.btns {
+	float: right;
+	margin: 5px;
+}
+
+.col-sm-5 {
+	padding-bottom: 15px;
+}
+
+.list-body {
+	padding: 0px;
+}
+
+.error {
+	color: red;
+	padding-left: 10px;
+}
+
+.formline {
+	padding-bottom: 15px;
+}
+
+.btn-primary {
+	background-color: #E77400;
+	border-color: #0c0c0c;
+}
+
+.btn-primary:not (:disabled ):not (.disabled ).active, .btn-primary:not
+	 (:disabled ):not (.disabled ):active, .show>.btn-primary.dropdown-toggle
+	{
+	color: #fff;
+	background-color: #cc000000;
+	border-color: #161617;
+}
+
+#finusertb {
+	width: 460px;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+	padding: 0px;
+}
+</style>
+<style>
+        .valids { color: green; }
+        .invalids { color: red; }
+    </style>
+<script th:inline="javascript">
+	
+
+	function home() {
+		location.href = 'Dashboard'
+	}
+
+	function back() {
+		window.history.back();
+	}
+
+	function submitform(a) {
+
+		var checkBoxAdminValue, adminValue, 
+		BRF_Reports, BRF_ReportsValue, 
+		Basel_Reports, Basel_ReportsValue, 
+		Archival, ArchivalValue,
+		Audit_Inquiries, Audit_InquiriesValue,
+		RBR_Reports, RBR_ReportsValue,
+		VAT_Ledger, VAT_LedgerValue,
+		Invoice_Data, Invoice_DataValue;
+	
+		
+		var finalVar = [];
+
+		checkBoxAdminValue = document.querySelector("#Admin:checked");
+		adminValue = (checkBoxAdminValue) ? 'Y' : 'N';
+
+		if (adminValue === "Y") {
+			finalVar.push("Admin");
+		}
+
+		BRF_Reports = document.querySelector("#BRF_Reports:checked");
+		BRF_ReportsValue = (BRF_Reports) ? 'Y' : 'N';
+		if (BRF_ReportsValue === "Y") {
+			finalVar.push("BRF_Reports");
+		}
+		
+		Basel_Reports = document.querySelector("#Basel_Reports:checked");
+		Basel_ReportsValue = (Basel_Reports) ? 'Y' : 'N';
+		if (Basel_ReportsValue === "Y") {
+			finalVar.push("Basel_Reports");
+		}
+		Archival = document.querySelector("#Archival:checked");
+		ArchivalValue = (Archival) ? 'Y' : 'N';
+		if (ArchivalValue === "Y") {
+			finalVar.push("Archival");
+		}
+
+		Audit_Inquiries = document.querySelector("#Audit_Inquiries:checked");
+		Audit_InquiriesValue = (Audit_Inquiries) ? 'Y' : 'N';
+		if (Audit_InquiriesValue === "Y") {
+			finalVar.push("Audit_Inquiries");
+		}
+
+		RBR_Reports = document.querySelector("#RBR_Reports:checked");
+		RBR_ReportsValue = (RBR_Reports) ? 'Y' : 'N';
+		if (RBR_ReportsValue === "Y") {
+			finalVar.push("RBR_Reports");
+		}
+		
+		VAT_Ledger = document.querySelector("#VAT_Ledger:checked");
+		VAT_LedgerValue = (VAT_Ledger) ? 'Y' : 'N';
+		if (VAT_LedgerValue === "Y") {
+			finalVar.push("VAT_Ledger");
+		}
+		
+		Invoice_Data = document.querySelector("#Invoice_Data:checked");
+		Invoice_DataValue = (Invoice_Data) ? 'Y' : 'N';
+		if (Invoice_DataValue === "Y") {
+			finalVar.push("Invoice_Data");
+		}
+		
+		var formmode = a.getAttribute("data-formmode");
+
+		var finalString = finalVar.join(',');
+		var url = "./createAccessRole?formmode=" + formmode 
+				+ "&adminValue="	+ adminValue 
+				+ "&BRF_ReportsValue="	+ BRF_ReportsValue 
+				+ "&Basel_ReportsValue=" + Basel_ReportsValue
+				+ "&ArchivalValue=" + ArchivalValue
+				+ "&Audit_InquiriesValue=" + Audit_InquiriesValue
+				+ "&RBR_ReportsValue=" + RBR_ReportsValue
+				+ "&VAT_LedgerValue=" + VAT_LedgerValue
+				+ "&Invoice_DataValue=" + Invoice_DataValue
+				+ "&finalString=" + finalString;
+
+		$("#IPSAccessRole").attr('action', url);
+
+		var options = {
+			success : showResponse
+		};
+
+		$("#IPSAccessRole").ajaxSubmit(options);
+
+		function showResponse(responseText, statusText, xhr, $form) {
+
+			$("#alertmsg").text(responseText);
+
+			$('#alert').modal("toggle");
+
+		}
+		;
+
+	};
+
+	function verifySubmit(a) {
+
+		var entryuser = a.getAttribute("data-entry_user");
+		var modifyuser = a.getAttribute("data-modify_user");
+		var formmode = a.getAttribute("data-formmode");
+		var loginuser = /*[[${session.USERID}]]*/null;
+
+		if ((modifyuser != null && modifyuser == loginuser)
+				|| (modifyuser == null && entryuser == loginuser)) {
+			$("#alertmsg").text("Same user cannot verify");
+			$('#alert').modal("toggle");
+		} else {
+
+			var url = "./createAccessRole?formmode=" + formmode;
+
+			$("#IPSAccessRole").attr('action', url);
+
+			var options = {
+				success : showResponse
+			};
+
+			$("#IPSAccessRole").ajaxSubmit(options);
+
+			function showResponse(responseText, statusText, xhr, $form) {
+
+				$("#alertmsg").text(responseText);
+
+				$('#alert').modal("toggle");
+
+			}
+			;
+		}
+
+	};
+	function deleteSubmit(a) {
+		var formmode = a.getAttribute("data-formmode");
+		var url = "./createAccessRole?formmode=" + formmode;
+
+		$("#IPSAccessRole").attr('action', url);
+
+		var options = {
+			success : showResponse
+		};
+
+		$("#IPSAccessRole").ajaxSubmit(options);
+
+		function showResponse(responseText, statusText, xhr, $form) {
+
+			$("#alertmsg").text(responseText);
+
+			$('#alert').modal("toggle");
+
+		};
+	};
+    </script>
+    <script>
+    function addrole(a) {
+		location.href = 'AccessandRoles?formmode=add';
+	}
+    function edit_btn_submit(a) {
+
+		var srlno = a.getAttribute("data-role_id");
+		location.href = 'AccessandRoles?formmode=edit&userid=' + srlno;
+	}
+
+    function list() {
+		location.href = 'AccessandRoles?formmode=list';
+	}
+	function view_btn_submit(a) {
+		var srlno = a.getAttribute("data-role_id");
+
+		location.href = 'AccessandRoles?formmode=view&userid=' + srlno;
+
+	}
+	
+	function verify_btn_submit(a) {
+		var srlno = a.getAttribute("data-role_id");
+
+		location.href = 'AccessandRoles?formmode=verify&userid=' + srlno;
+
+	}
+	function delete_btn_submit(a) {
+		var rollID = a.getAttribute("data-role_id");
+		location.href = 'AccessandRoles?formmode=delete&userid=' + rollID;
+	}
+    </script>
+</head>
+<style>
+  /* Tab container */
+  .nav-tabs {
+    border-bottom: 2px solid #dee2e6;
+    background-color: #e9ecf0;
+    padding: 4px 10px;
+    border-radius: 0.25rem 0.25rem 0 0;
+  }
+
+  /* Tab buttons */
+  .nav-tabs .nav-link {
+    border: 1px solid #dee2e6;
+    border-bottom: none;
+    background-color: #f1f1f1;
+    color: #376275;
+    font-weight: 600;
+    padding: 8px 20px;
+    margin-right: 4px;
+    border-radius: 5px 5px 0 0;
+    transition: background-color 0.3s, color 0.3s;
+  }
+
+  /* On hover */
+  .nav-tabs .nav-link:hover {
+    background-color: #d6e0e7;
+    color: #2c4c63;
+  }
+
+  /* Active tab */
+  .nav-tabs .nav-link.active {
+    background-color: #376275;
+    color: #fff;
+    border-color: #dee2e6 #dee2e6 #fff;
+  }
+
+  /* Tab content area */
+  .tab-content {
+    border: 1px solid #dee2e6;
+    border-top: none;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 0 0 0.25rem 0.25rem;
+    font-family: Verdana, sans-serif;
+    color: #333;
+  }
+ 
+  <style>
+  table {
+    font-size: 12px;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    background-color: #e9ecf0;
+    z-index: 1;
+  }
+
+  .table-responsive {
+    border: 1px solid #ccc;
+  }
+</style>
+  
+</style>
+
+<title>BCDRS</title>
+<body>
+	<div th:insert="XBRLHeaderMenu :: header"></div>
+
+	<!-- -------------------User List Starts----------------------------------------------------- -->
+	<div class="container content">
+
+		
+			<div class="card" style="width: 1433px; margin-left: -26px;">
+				<div class="card-header" style="background-color: #376275;">
+					<div class="float-left" style="color: white;">
+						<h5 
+							style="font-family: verdana; font-size: 30px; font-weight: bold; padding-top: 10px; ">FX RISK DATA</h5>
+					</div>
+					
+					
+				</div>
+			
+
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" Style="color:black"id="datacontrols-tab" data-toggle="tab" href="#datacontrols" role="tab">Data Controls</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="template-tab" Style="color:black"data-toggle="tab" href="#template" role="tab">Template Instructions</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="data-tab" Style="color:black" data-toggle="tab" href="#data" role="tab">Data</a>
+  </li>
+</ul>
+
+<div class="tab-content" id="myTabContent" style="margin-top: 15px;">
+  <div class="tab-pane fade show active" id="datacontrols" role="tabpanel">
+    <p>Data control tab.</p>
+  </div>
+  <div class="tab-pane fade" id="template" role="tabpanel">
+    <p>Templates tab</p>
+  </div>
+  <div class="tab-pane fade" id="data" role="tabpanel">
+    <!-- Move your existing table content here -->
+
+			<div class="row">
+				<div class="col-sm-12">
+					<div class="container-fluid">
+  
+  <div class="table-responsive" style="max-height: 500px; overflow: auto;">
+    <table class="table table-bordered table-striped table-hover" style="min-width: 2000px;">
+      <thead class="thead-light" style="background-color:#e9ecf0; font-size: 13px;">
+      <tr>
+  <th style="min-width:130px">Date</th>
+  <th>Bank Name</th>
+  <th>Bank Symbol</th>
+  <th>Conventional/Islamic</th>
+  <th>Local/Foreign</th>
+  <th>CBUAE Tiering</th>
+  <th>Currency</th>
+  <th>FX Net Open Position (USD equivalent 000)</th>
+  <th>Off Balance Sheet Position (USD equivalent 000)</th>
+  <th>On Balance Sheet Position (USD equivalent 000)</th>
+  <th>FX Net Open Position Foreign Currency (000)</th>
+  <th>Internal Long Limit (USD equivalent 000)</th>
+  <th>Internal Long Limit Trigger Status</th>
+  <th>Internal Short Limit (USD equivalent 000)</th>
+  <th>Internal Short Limit Trigger Status</th>
+  <th>Bank Core Tier 1 Capital (000 USD)</th>
+  <th>Bank Core Tier 1 Capital LC(000)</th>
+  <th>% of Group Capital</th>
+  <!--<th></th>
+  <th>Bank Core Tier 1 Capital (AED)</th>-->
+</tr>
+
+      </thead>
+      <tbody>
+        <!-- Loop to render data dynamically -->
+        <tr th:each="data : ${branchList}">
+          <td th:text="${#dates.format(data.bank_date, 'dd-MM-yyyy')}"></td>
+          <td th:text="${data.bank_name}"></td>
+          <td th:text="${data.bank_symbol}"></td>
+          <td th:text="${data.conventional_islamic}"></td>
+          <td th:text="${data.local_foreign}"></td>
+          <td th:text="${data.cbuae_tiering}"></td>
+          <td th:text="${data.currency}"></td>
+          <td th:text="${data.fx_net_openposition}"></td>
+          <td th:text="${data.off_balance_sheet_position}"></td>
+          <td th:text="${data.on_balance_sheet_position}"></td>
+          <td th:text="${data.fx_net_openposition_foreign_currency}"></td>
+          <td th:text="${data.internal_long_limit}"></td>
+          <td th:text="${data.internal_long_limit_trigger_status}"></td>
+          <td th:text="${data.internal_short_limit}"></td>
+          <td th:text="${data.internal_short_limit_trigger_status}"></td>
+          <td th:text="${data.counterpartyBalance}"></td>
+          <td th:text="${data.bank_core_tier1_capital}"></td>
+          <td th:text="${data.bank_core_tier1_capital_lc}"></td>
+          <td th:text="${data.percent_of_group_capital}"></td>
+         
+          
+          
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+					<div class="card-footer text-center"
+						 style="background-color: #376275;">
+						<button type="button" class="btn btn-xs btn-primary" id="btnHome"
+							onclick="home();">Home</button>
+						<button type="button" class="btn btn-xs btn-primary" id="btnBack"
+							onclick="back();">Back</button>
+					</div>
+				</div>
+			</div>
+			</div>
+		</div>
+		</div>
+			<div class="row">
+			<div class="col-sm-12 finuserapply" >
+				
+	
+	</div>
+	</div>
+	</div>
+	<div class="modal fade" id="alert">
+		<div
+			class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+			<div class="modal-content">
+				<div class="modal-body" style="text-align: center">
+					<p id="alertmsg"></p>
+					<button type="button" class="btn btn-primary" data-dismiss="modal"
+						onclick="list();">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<div class="modal fade" id="datadelete">
+		<div
+			class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+			<div class="modal-content">
+				<div class="modal-body"
+					style="margin-top: 8px; text-align: center; color: #f15362;">
+					<button type="button" class="close" data-dismiss="modal">×</button>
+					Are you Sure want to delete?
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary"
+						onclick="submitformdelete(this);" th:attr="data-formmode=delete">Submit</button>
+					<button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="formmsg">
+		<div
+			class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+			<div class="modal-content">
+				<div class="modal-body"
+					style="margin-top: 8px; text-align: center; color: aliceblue;">
+					<button type="button" class="close" data-dismiss="modal">×</button>
+					<a th:value="${msg}"></a>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary"
+						onclick="submitformdelete(this);" th:attr="data-formmode=delete">Submit</button>
+					<button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+</body>
+</html>
