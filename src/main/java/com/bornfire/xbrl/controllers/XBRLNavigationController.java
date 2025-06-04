@@ -1,6 +1,7 @@
 package com.bornfire.xbrl.controllers;
 
 import java.io.File;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -39,7 +40,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.bornfire.xbrl.entities.AccessAndRoles;
-import com.bornfire.xbrl.entities.AccessandRolesRepository;
 import com.bornfire.xbrl.entities.AlertManagementEntity;
 import com.bornfire.xbrl.entities.AlertManagementRepository;
 
@@ -79,6 +79,9 @@ import com.bornfire.xbrl.services.ReportServices.ReportTitle;
 import com.bornfire.xbrl.services.AccessAndRolesServices;
 
 
+import com.bornfire.xbrl.entities.AccessandRolesRepository;
+import com.bornfire.xbrl.entities.NostroAccBalDataRepository;
+
 import net.sf.jasperreports.engine.JRException;
 
 @Controller
@@ -95,6 +98,9 @@ public class XBRLNavigationController {
 	
 	@Autowired
 	AccessandRolesRepository accessandrolesrepository;
+	
+	@Autowired
+	NostroAccBalDataRepository nostroAccBalRepo;
 	
 	@Autowired
 	SessionFactory sessionFactory;
@@ -360,198 +366,13 @@ public class XBRLNavigationController {
 		return "XBRLUserprofile";
 	}
 
-	@RequestMapping(value = "CountryRisk", method = RequestMethod.GET)
-	public String CountryRisk(Model md, HttpServletRequest req) {
-		// Logging Navigation
-		// System.out.print("fgdfh");
-		String userid = (String) req.getSession().getAttribute("USERID");
-
-		loginServices.SessionLogging("BANKMAST", "M3", req.getSession().getId(), userid, req.getRemoteAddr(), "ACTIVE");
-
-		md.addAttribute("bankdata", countryRiskParameterRep.getall());
-		md.addAttribute("singledetail", new CountryRiskParameter());
-		md.addAttribute("menu", "CountryRiskParameter");
-
-		return "XBRLCountryRiskParameter";
-	}
-
-	@RequestMapping(value = "BankMaster", method = RequestMethod.GET)
-	public String bankmaster(Model md, HttpServletRequest req) {
-		// Logging Navigation
-		// System.out.print("fgdfh");
-		String userid = (String) req.getSession().getAttribute("USERID");
-		loginServices.SessionLogging("BANKMAST", "M3", req.getSession().getId(), userid, req.getRemoteAddr(), "ACTIVE");
-		md.addAttribute("bankdata", bankServices.getBankData());
-		md.addAttribute("singledetail", new BankMaster());
-		md.addAttribute("menu", "BankMaster");
-
-		return "XBRLBankMaster";
-	}
-
-	@RequestMapping(value = "EtlMonitor", method = RequestMethod.GET)
-	public String etlMonitor(Model md, HttpServletRequest req) {
-		// Logging Navigation
-
-		String userid = (String) req.getSession().getAttribute("USERID");
-
-		// loginServices.SessionLogging("", "M3", req.getSession().getId(), userid,
-		// req.getRemoteAddr(), "ACTIVE");
-
-		md.addAttribute("EtlError", etlServices.getEtlError());
-		md.addAttribute("EtlStatus", etlServices.getEtlStatus());
-		md.addAttribute("menu", "EtlMonitor");
-
-		return "XBRLEtlMonitor";
-	}
-
-	@RequestMapping(value = "GlSubHead", method = RequestMethod.GET)
-	public ModelAndView glSubHead(Model md, HttpServletRequest req,
-			@RequestParam(value = "page", required = false) Optional<Integer> page,
-			@RequestParam(value = "size", required = false) Optional<Integer> size) {
-		String userid = (String) req.getSession().getAttribute("USERID");
-
-		int currentPage = page.orElse(0);
-		int pageSize = size.orElse(Integer.parseInt(pagesize));
-
-		logger.info("xbrlnavigationcontroller -> glSubHead()");
-
-		md.addAttribute("menu", "GlSubHead");
-		md.addAttribute("displaymode", "detail");
-		ModelAndView mv = glSubHeadConfigService.getGlSubHeadMeta(PageRequest.of(currentPage, pageSize));
-		// md.addAttribute("singledetail", new BankMaster());
-
-		return mv;
-	}
-
-	@RequestMapping(value = "BranchMaster", method = RequestMethod.GET)
-	public String branchMaster(Model md, HttpServletRequest req) {
-
-		String userid = (String) req.getSession().getAttribute("USERID");
-		// Logging Navigation
-		loginServices.SessionLogging("BRANCHMAST", "M3", req.getSession().getId(), userid, req.getRemoteAddr(),
-				"ACTIVE");
-
-		md.addAttribute("branchList", bankServices.getBranchList());
-
-		md.addAttribute("menu", "BranchMaster");
-
-		return "XBRLBranchMaster";
-	}
-
-	@RequestMapping(value = "ReferenceCode", method = RequestMethod.GET)
-	public String refcode(Model md, HttpServletRequest req) {
-
-		String userid = (String) req.getSession().getAttribute("USERID");
-
-		// Logging Navigation
-		loginServices.SessionLogging("REFCODE", "M6", req.getSession().getId(), userid, req.getRemoteAddr(), "ACTIVE");
-
-		md.addAttribute("menu", "ReferenceCode");
-		md.addAttribute("refCodeTypeList", referenceCodeConfigure.genRefCodeDescList());
-		md.addAttribute("referdetail", new GenRefCodeMast());
-		return "XBRLRefCodeConfig";
-	}
-
-	@RequestMapping(value = "ReportCode", method = RequestMethod.GET)
-	public String repcode(Model md, HttpServletRequest req) {
-
-		String userid = (String) req.getSession().getAttribute("USERID");
-		// Logging Navigation
-		loginServices.SessionLogging("REPCODE", "M7", req.getSession().getId(), userid, req.getRemoteAddr(), "ACTIVE");
-
-		md.addAttribute("menu", "ReportCode");
-		return "XBRLRepCodeConfig";
-	}
-
-	@RequestMapping(value = "ReportCodeMaintain", method = RequestMethod.GET)
-	public String repmain(Model md, HttpServletRequest req, @RequestParam(required = false) String dtltype,
-			@RequestParam(value = "page", required = false) Optional<Integer> page,
-			@RequestParam(value = "size", required = false) Optional<Integer> size,
-			@RequestParam(required = false) String acctnum) {
-
-		int currentPage = page.orElse(0);
-		int pageSize = size.orElse(Integer.parseInt(pagesize));
-
-		String userid = (String) req.getSession().getAttribute("USERID");
-		// Logging Navigation
-		loginServices.SessionLogging("REPCODE", "M7", req.getSession().getId(), userid, req.getRemoteAddr(), "ACTIVE");
-
-		md.addAttribute("menu", "ReportCodeMaintain");
-
-		if (dtltype == null) {
-
-			md.addAttribute("repcodelist",
-					reportCodeMappingService.getRepCodeMapLists(PageRequest.of(currentPage, pageSize)));
-			return "XBRLRepCodeMain";
-
-		} else if (dtltype.equals("page")) {
-
-			md.addAttribute("repcodelist",
-					reportCodeMappingService.getRepCodeMapLists(PageRequest.of(currentPage, pageSize)));
-			return "XBRLRepCodeMain :: repcodeconfig";
-
-		} else {
-
-			md.addAttribute("repcodelist",
-					reportCodeMappingService.getSearchResult(acctnum, PageRequest.of(currentPage, pageSize)));
-			return "XBRLRepCodeMain :: repcodeconfig";
-		}
-
-	}
-
-	@RequestMapping(value = "ReportCodeMaintain2", method = RequestMethod.GET)
-	public String repmain2(Model md, HttpServletRequest req, @RequestParam(required = false) String dtltype,
-			@RequestParam(value = "page", required = false) Optional<Integer> page,
-			@RequestParam(value = "size", required = false) Optional<Integer> size,
-			@RequestParam(required = false) String acctnum) {
-
-		int currentPage = page.orElse(0);
-		int pageSize = size.orElse(Integer.parseInt(pagesize));
-
-		String userid = (String) req.getSession().getAttribute("USERID");
-		// Logging Navigation
-		loginServices.SessionLogging("REPCODE", "M7", req.getSession().getId(), userid, req.getRemoteAddr(), "ACTIVE");
-
-		md.addAttribute("menu", "ReportCodeMaintain2");
-
-		if (dtltype == null) {
-
-			md.addAttribute("repcodelist",
-					reportCodeMappingService.getRepCodeMapLists(PageRequest.of(currentPage, pageSize)));
-			return "XBRLRepCodeMain2";
-
-		} else if (dtltype.equals("page")) {
-
-			md.addAttribute("repcodelist",
-					reportCodeMappingService.getRepCodeMapLists(PageRequest.of(currentPage, pageSize)));
-			return "XBRLRepCodeMain2 :: repcodeconfig";
-
-		} else {
-
-			md.addAttribute("repcodelist",
-					reportCodeMappingService.getSearchResult(acctnum, PageRequest.of(currentPage, pageSize)));
-			return "XBRLRepCodeMain2 :: repcodeconfig";
-		}
-
-	}
-
-	@RequestMapping(value = "ReportMaster", method = RequestMethod.GET)
-	public String reportMaster(Model md, HttpServletRequest req) {
-
-		String userid = (String) req.getSession().getAttribute("USERID");
-		// Logging Navigation
-		loginServices.SessionLogging("REPORTMAST", "M5", req.getSession().getId(), userid, req.getRemoteAddr(),
-				"ACTIVE");
-
-		md.addAttribute("menu", "ReportMaster");
-		md.addAttribute("reportList", reportServices.getReportsMaster());
-		return "XBRLReportMaster";
-	}
-
+	
 	
 	@RequestMapping(value = "Nostro_Account_Bal", method = RequestMethod.GET)
 	public String NostroAccountBal(Model md, HttpServletRequest req) {
 	
+		md.addAttribute("branchList", nostroAccBalRepo.getlist());
+
 		return "Nostro_Account_Bal";
 	}
 
