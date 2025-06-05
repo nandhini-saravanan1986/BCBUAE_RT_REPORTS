@@ -1,12 +1,15 @@
 package com.bornfire.xbrl.services;
 
 import java.io.File;
+
 import java.io.FileNotFoundException;
+import java.math.BigDecimal;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -247,6 +250,124 @@ public class LoginServices {
 
 	}
 
+	public String addUser(UserProfile userProfile, String formmode, String inputUser,String username,String mob,String role) {
+
+		String msg = "";
+
+		try {
+
+			if (formmode.equals("add")) {
+				UserProfile up = userProfile;
+				try {
+					String encryptedPassword = PasswordEncryption.getEncryptedPassword(userProfile.getPassword());
+
+					if (up.getLogin_status().equals("Active")) {
+						up.setUser_locked_flg("N");
+					} else {
+						up.setUser_locked_flg("Y");
+					}
+
+					if (up.getUser_status().equals("Active")) {
+						up.setDisable_flg("N");
+					} else {
+						up.setDisable_flg("Y");
+					}
+
+					up.setEntity_flg("N");
+					up.setEntry_time(new Date());
+					up.setEntry_user(inputUser);
+				    up.setAcct_access_code(up.getAcct_access_code());
+					up.setLogin_flg("N");//To prompt the user for changing the password at first login
+					up.setNo_of_attmp(0);
+					up.setLog_in_count("0");
+					up.setEmp_name(up.getUsername());
+					String localdateval = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+					LocalDate date = LocalDate.parse(localdateval);
+					BigDecimal passexpdays = new BigDecimal(up.getPass_exp_days());
+					LocalDate date2 = date.plusDays(passexpdays.intValue());
+					up.setPass_exp_date(new SimpleDateFormat("yyyy-MM-dd").parse(date2.toString()));
+					up.setPassword(encryptedPassword);
+
+					userProfileRep.save(up);
+
+					
+					
+					//save datas for audit services
+					 BigDecimal mobile = new BigDecimal(mob);
+					 Date currentDate = new Date();
+						Session hs = sessionFactory.getCurrentSession();
+						System.out.println("first");
+					 BigDecimal srlno = (BigDecimal) hs.createNativeQuery("SELECT USER_AUDIT_SRL_NO.NEXTVAL AS SRL_NO FROM DUAL")
+								.getSingleResult();
+						System.out.println("second");
+				
+					msg = "User Created Successfully";
+				
+				} catch (Exception e) {
+					msg = "Kindly check the data/Please contact Administrator";
+					e.printStackTrace();
+				}
+
+				
+				
+				
+
+			}else {
+
+				Optional<UserProfile> up = userProfileRep.findById(userProfile.getUserid());
+
+				if (up.isPresent()) {
+
+					userProfile.setPassword(up.get().getPassword());
+
+					if (userProfile.getLogin_status().equals("Active")) {
+						userProfile.setUser_locked_flg("N");
+					} else {
+						userProfile.setUser_locked_flg("Y");
+					}
+
+					if (userProfile.getUser_status().equals("Active")) {
+						userProfile.setDisable_flg("N");
+					} else {
+						userProfile.setDisable_flg("Y");
+					}
+					
+					if(userProfile.getPass_exp_days().equals(up.get().getPass_exp_days())) {
+						userProfile.setPass_exp_date(up.get().getPass_exp_date());
+					}else {
+						String localdateval = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+						LocalDate date = LocalDate.parse(localdateval);
+						BigDecimal passexpdays = new BigDecimal(userProfile.getPass_exp_days());
+						LocalDate date2 = date.plusDays(passexpdays.intValue());
+						userProfile.setPass_exp_date(new SimpleDateFormat("yyyy-MM-dd").parse(date2.toString()));
+					}
+					userProfile.setLog_in_count(up.get().getLog_in_count() != null ? up.get().getLog_in_count() : "1");
+					userProfile.setEntry_user(up.get().getEntry_user());
+					userProfile.setEntry_time(up.get().getEntry_time());
+					userProfile.setNo_of_attmp(0);
+					userProfile.setEntity_flg("N");
+					userProfile.setModify_user(inputUser);
+					userProfile.setModify_time(new Date());
+
+					userProfileRep.save(userProfile);
+					msg = "User Edited Successfully";
+				}else {
+					msg = "User Not found to edit";
+				}
+
+				
+
+			}
+		} catch (Exception e) {
+			msg = "Error Occured. Please contact Administrator";
+			e.printStackTrace();
+			logger.info(e.getMessage());
+		}
+
+		return msg;
+	}
+
+	
 	public String verifyUser(UserProfile userProfile, String inputUser) {
 		String msg = "";
 

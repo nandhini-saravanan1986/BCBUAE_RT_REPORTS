@@ -3,6 +3,7 @@ package com.bornfire.xbrl.entities;
 
 import java.util.List;
 
+
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;

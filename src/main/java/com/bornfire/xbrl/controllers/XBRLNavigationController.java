@@ -2,6 +2,7 @@ package com.bornfire.xbrl.controllers;
 
 import java.io.File;
 
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -25,11 +26,15 @@ import org.hibernate.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,6 +55,7 @@ import com.bornfire.xbrl.entities.CustomReportsParmsRepo;
 import com.bornfire.xbrl.entities.FinSolTb;
 import com.bornfire.xbrl.entities.FxRiskDataRepository;
 import com.bornfire.xbrl.entities.GenRefCodeMast;
+import com.bornfire.xbrl.entities.NostroAccBalData;
 import com.bornfire.xbrl.entities.UserProfile;
 import com.bornfire.xbrl.entities.BRSS.AUDReconOs_Mirror;
 import com.bornfire.xbrl.entities.BRSS.CountryRiskParameter;
@@ -62,6 +68,8 @@ import com.bornfire.xbrl.entities.BRSS.ReportValidations;
 import com.bornfire.xbrl.entities.BRSS.ReportValidationsRepo;
 import com.bornfire.xbrl.entities.BRSS.T1CurProdServicesRepo;
 import com.bornfire.xbrl.entities.BRSS.ValidationResponse;
+import com.bornfire.xbrl.entities.AccessandRolesRepository;
+import com.bornfire.xbrl.entities.NostroAccBalDataRepository;
 import com.bornfire.xbrl.services.AlertManagementServices;
 
 
@@ -71,6 +79,7 @@ import com.bornfire.xbrl.services.CountryRiskServices;
 import com.bornfire.xbrl.services.EtlServices;
 import com.bornfire.xbrl.services.GlSubHeadConfigService;
 import com.bornfire.xbrl.services.LoginServices;
+import com.bornfire.xbrl.services.NostroAccBalDataService;
 import com.bornfire.xbrl.services.RBSValidationservices;
 
 import com.bornfire.xbrl.services.ReferenceCodeConfigure;
@@ -80,8 +89,6 @@ import com.bornfire.xbrl.services.ReportServices.ReportTitle;
 import com.bornfire.xbrl.services.AccessAndRolesServices;
 
 
-import com.bornfire.xbrl.entities.AccessandRolesRepository;
-import com.bornfire.xbrl.entities.NostroAccBalDataRepository;
 
 import net.sf.jasperreports.engine.JRException;
 
@@ -94,6 +101,7 @@ public class XBRLNavigationController {
 	@Autowired
 	LoginServices loginServices;
 
+	
 	@Autowired
 	AccessAndRolesServices AccessRoleService;
 	
@@ -102,6 +110,10 @@ public class XBRLNavigationController {
 	
 	@Autowired
 	NostroAccBalDataRepository nostroAccBalRepo;
+	
+	@Autowired
+	NostroAccBalDataService nostroService;
+
 	
 	@Autowired
 	FxRiskDataRepository friskdataRepo;
@@ -371,14 +383,64 @@ public class XBRLNavigationController {
 	}
 
 	
+	@RequestMapping(value = "createUser", method = RequestMethod.POST)
+	@ResponseBody
+	public String createUser(@RequestParam("formmode") String formmode, @ModelAttribute UserProfile userprofile,
+			Model md, HttpServletRequest rq) {
+		String MOB = (String) rq.getSession().getAttribute("MOBILENUMBER");
+		String ROLE = (String) rq.getSession().getAttribute("ROLEDESC");
+		String userid = (String) rq.getSession().getAttribute("USERID");
+		String username = (String) rq.getSession().getAttribute("USERNAME");
+		String msg = loginServices.addUser(userprofile, formmode, userid, username, MOB, ROLE);
+
+		return msg;
+
+	}
 	
 	@RequestMapping(value = "Nostro_Account_Bal", method = RequestMethod.GET)
-	public String NostroAccountBal(Model md, HttpServletRequest req) {
-	
-		md.addAttribute("branchList", nostroAccBalRepo.getlist());
+	public String NostroAccountBal(
+	        @RequestParam(value = "accountNo", required = false) String accountNo,
+	        Model md, HttpServletRequest req) {
 
-		return "Nostro_Account_Bal";
+	    // Always fetch the list
+	    md.addAttribute("branchList", nostroAccBalRepo.getlist());
+
+	    if (accountNo != null && !accountNo.isEmpty()) {
+	        NostroAccBalData data = nostroAccBalRepo.findById(accountNo).orElse(null);
+	        md.addAttribute("nostroData", data);
+	        md.addAttribute("formmode", "edit"); // edit mode if accountNo is passed
+	    } else {
+	        md.addAttribute("formmode", "list"); // list mode by default
+	    }
+
+	    return "Nostro_Account_Bal"; // Your HTML page
 	}
+
+
+
+	@PostMapping("/updateNostro")
+	public String updateNostro(@ModelAttribute NostroAccBalData nostroData, Model model) {
+	    System.out.println("came to controller");
+
+	    boolean updated = nostroService.updateNostro(nostroData);
+
+	    if (updated) {
+	        model.addAttribute("msg", "Update successful");
+	    } else {
+	        model.addAttribute("msg", "Record not found for update");
+	    }
+
+	    return "Nostro_Account_Bal"; // your view
+	    
+	}
+
+	@InitBinder
+	public void initBinder(WebDataBinder binder) {
+	    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+	    sdf.setLenient(false);
+	    binder.registerCustomEditor(Date.class, new CustomDateEditor(sdf, true));
+	}
+
 
 	@RequestMapping(value = "Fx_Risk_Data", method = RequestMethod.GET)
 	public String Fxriskdata(Model md, HttpServletRequest req) {

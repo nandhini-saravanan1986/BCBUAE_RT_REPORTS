@@ -107,187 +107,78 @@ PURPOSE		: Access the Modules by Role
 		window.history.back();
 	}
 
-	function submitform(a) {
-
-		var checkBoxAdminValue, adminValue, 
-		BRF_Reports, BRF_ReportsValue, 
-		Basel_Reports, Basel_ReportsValue, 
-		Archival, ArchivalValue,
-		Audit_Inquiries, Audit_InquiriesValue,
-		RBR_Reports, RBR_ReportsValue,
-		VAT_Ledger, VAT_LedgerValue,
-		Invoice_Data, Invoice_DataValue;
-	
-		
-		var finalVar = [];
-
-		checkBoxAdminValue = document.querySelector("#Admin:checked");
-		adminValue = (checkBoxAdminValue) ? 'Y' : 'N';
-
-		if (adminValue === "Y") {
-			finalVar.push("Admin");
-		}
-
-		BRF_Reports = document.querySelector("#BRF_Reports:checked");
-		BRF_ReportsValue = (BRF_Reports) ? 'Y' : 'N';
-		if (BRF_ReportsValue === "Y") {
-			finalVar.push("BRF_Reports");
-		}
-		
-		Basel_Reports = document.querySelector("#Basel_Reports:checked");
-		Basel_ReportsValue = (Basel_Reports) ? 'Y' : 'N';
-		if (Basel_ReportsValue === "Y") {
-			finalVar.push("Basel_Reports");
-		}
-		Archival = document.querySelector("#Archival:checked");
-		ArchivalValue = (Archival) ? 'Y' : 'N';
-		if (ArchivalValue === "Y") {
-			finalVar.push("Archival");
-		}
-
-		Audit_Inquiries = document.querySelector("#Audit_Inquiries:checked");
-		Audit_InquiriesValue = (Audit_Inquiries) ? 'Y' : 'N';
-		if (Audit_InquiriesValue === "Y") {
-			finalVar.push("Audit_Inquiries");
-		}
-
-		RBR_Reports = document.querySelector("#RBR_Reports:checked");
-		RBR_ReportsValue = (RBR_Reports) ? 'Y' : 'N';
-		if (RBR_ReportsValue === "Y") {
-			finalVar.push("RBR_Reports");
-		}
-		
-		VAT_Ledger = document.querySelector("#VAT_Ledger:checked");
-		VAT_LedgerValue = (VAT_Ledger) ? 'Y' : 'N';
-		if (VAT_LedgerValue === "Y") {
-			finalVar.push("VAT_Ledger");
-		}
-		
-		Invoice_Data = document.querySelector("#Invoice_Data:checked");
-		Invoice_DataValue = (Invoice_Data) ? 'Y' : 'N';
-		if (Invoice_DataValue === "Y") {
-			finalVar.push("Invoice_Data");
-		}
-		
-		var formmode = a.getAttribute("data-formmode");
-
-		var finalString = finalVar.join(',');
-		var url = "./createAccessRole?formmode=" + formmode 
-				+ "&adminValue="	+ adminValue 
-				+ "&BRF_ReportsValue="	+ BRF_ReportsValue 
-				+ "&Basel_ReportsValue=" + Basel_ReportsValue
-				+ "&ArchivalValue=" + ArchivalValue
-				+ "&Audit_InquiriesValue=" + Audit_InquiriesValue
-				+ "&RBR_ReportsValue=" + RBR_ReportsValue
-				+ "&VAT_LedgerValue=" + VAT_LedgerValue
-				+ "&Invoice_DataValue=" + Invoice_DataValue
-				+ "&finalString=" + finalString;
-
-		$("#IPSAccessRole").attr('action', url);
-
-		var options = {
-			success : showResponse
-		};
-
-		$("#IPSAccessRole").ajaxSubmit(options);
-
-		function showResponse(responseText, statusText, xhr, $form) {
-
-			$("#alertmsg").text(responseText);
-
-			$('#alert').modal("toggle");
-
-		}
-		;
-
-	};
-
-	function verifySubmit(a) {
-
-		var entryuser = a.getAttribute("data-entry_user");
-		var modifyuser = a.getAttribute("data-modify_user");
-		var formmode = a.getAttribute("data-formmode");
-		var loginuser = /*[[${session.USERID}]]*/null;
-
-		if ((modifyuser != null && modifyuser == loginuser)
-				|| (modifyuser == null && entryuser == loginuser)) {
-			$("#alertmsg").text("Same user cannot verify");
-			$('#alert').modal("toggle");
-		} else {
-
-			var url = "./createAccessRole?formmode=" + formmode;
-
-			$("#IPSAccessRole").attr('action', url);
-
-			var options = {
-				success : showResponse
-			};
-
-			$("#IPSAccessRole").ajaxSubmit(options);
-
-			function showResponse(responseText, statusText, xhr, $form) {
-
-				$("#alertmsg").text(responseText);
-
-				$('#alert').modal("toggle");
-
-			}
-			;
-		}
-
-	};
-	function deleteSubmit(a) {
-		var formmode = a.getAttribute("data-formmode");
-		var url = "./createAccessRole?formmode=" + formmode;
-
-		$("#IPSAccessRole").attr('action', url);
-
-		var options = {
-			success : showResponse
-		};
-
-		$("#IPSAccessRole").ajaxSubmit(options);
-
-		function showResponse(responseText, statusText, xhr, $form) {
-
-			$("#alertmsg").text(responseText);
-
-			$('#alert').modal("toggle");
-
-		};
-	};
-    </script>
-    <script>
-    function addrole(a) {
-		location.href = 'AccessandRoles?formmode=add';
-	}
-    function edit_btn_submit(a) {
-
-		var srlno = a.getAttribute("data-role_id");
-		location.href = 'AccessandRoles?formmode=edit&userid=' + srlno;
-	}
-
-    function list() {
-		location.href = 'AccessandRoles?formmode=list';
-	}
-	function view_btn_submit(a) {
-		var srlno = a.getAttribute("data-role_id");
-
-		location.href = 'AccessandRoles?formmode=view&userid=' + srlno;
-
+	function list() {
+		location.href = 'Nostro_Account_Bal';
 	}
 	
-	function verify_btn_submit(a) {
-		var srlno = a.getAttribute("data-role_id");
+	$(document).ready(function () {
+	    // On modal close, redirect to your controller method path
+	    $('#alert').on('hidden.bs.modal', function () {
+	        window.location.href = './Nostro_Account_Bal';
+	    });
+	});
 
-		location.href = 'AccessandRoles?formmode=verify&userid=' + srlno;
+	
+	function updateform() {
+	    $('#Nostro').validate({
+	        rules: {
+	            bankName: { required: true, minlength: 2 },
+	            dataDate: { required: true },
+	            counterpartyBalance: { number: true },
+	            bankBalance: { number: true },
+	            counterpartyBalanceAed: { number: true },
+	            bankBalanceAed: { number: true },
+	            gap: { number: true }
+	        },
+	        messages: {
+	            bankName: { required: "Please provide Bank Name", minlength: "Bank Name must be at least 2 characters" },
+	            dataDate: "Please provide Data Date",
+	            counterpartyBalance: "Enter valid number",
+	            bankBalance: "Enter valid number",
+	            counterpartyBalanceAed: "Enter valid number",
+	            bankBalanceAed: "Enter valid number",
+	            gap: "Enter valid number"
+	        }
+	    });
 
+	    if ($("#Nostro").valid()) {
+	        $("#loader1").modal("show");
+
+	        var url = "./updateNostro";
+	        $("#Nostro").attr('action', url);
+
+	        var options = {
+	            success: function (responseText, statusText, xhr, $form) {
+	                $("#loader1").modal("hide");
+
+	                // Show modal alert
+	                $("#alertmsg").text("Updated Success fully");
+
+					$('#alert').modal("toggle");
+
+	                // Redirect after short delay
+	               
+	                    window.location.href = "Nostro_Account_Bal";
+	                
+	            },
+	            error: function (xhr, status, error) {
+	                $("#loader1").modal("hide");
+	                $("#alertmsg").text("Error: " + error);
+	               
+					$('#alert').modal("toggle");
+	            }
+	        };
+
+	        $("#Nostro").ajaxSubmit(options);
+	    } else {
+	        $("#alertmsg").text("Please fix validation errors.");
+	        $('#alert').modal("show");
+	    }
 	}
-	function delete_btn_submit(a) {
-		var rollID = a.getAttribute("data-role_id");
-		location.href = 'AccessandRoles?formmode=delete&userid=' + rollID;
-	}
+
+	
     </script>
+  
 </head>
 <style>
   /* Tab container */
@@ -305,7 +196,7 @@ PURPOSE		: Access the Modules by Role
     background-color: #f1f1f1;
     color: #376275;
     font-weight: 600;
-    padding: 8px 20px;
+   
     margin-right: 4px;
     border-radius: 5px 5px 0 0;
     transition: background-color 0.3s, color 0.3s;
@@ -328,12 +219,13 @@ PURPOSE		: Access the Modules by Role
   .tab-content {
     border: 1px solid #dee2e6;
     border-top: none;
-    padding: 20px;
+    
     background-color: #ffffff;
     border-radius: 0 0 0.25rem 0.25rem;
     font-family: Verdana, sans-serif;
     color: #333;
   }
+ </style>
   <style>
   table {
     font-size: 12px;
@@ -346,12 +238,151 @@ PURPOSE		: Access the Modules by Role
     z-index: 1;
   }
 
-  .table-responsive {
-    border: 1px solid #ccc;
-  }
-</style>
   
 </style>
+  <style>
+  thead {
+    background-color: #e9ecf0 !important;
+  }
+
+  tbody tr {
+    background-color: #ffffff;
+  }
+
+ 
+</style>
+  <style>
+  .card {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-radius: 8px;
+  }
+
+  .card-header h5 {
+    font-size: 22px;
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .nav-tabs .nav-link {
+    font-weight: 500;
+    border: 1px solid #dee2e6;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    background-color: #f1f1f1;
+    margin-right: 5px;
+  }
+
+  .nav-tabs .nav-link.active {
+    background-color: #ffffff;
+    border-color: #dee2e6 #dee2e6 #ffffff;
+  }
+
+  .table-responsive {
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+  }
+
+  .table-hover tbody tr:hover {
+    background-color: #f3f6f9;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    background-color: #e9ecf0;
+    z-index: 1;
+  }
+
+  .card-footer {
+    padding: 10px;
+    border-top: 1px solid #ccc;
+  }
+
+  .btn-xs {
+    padding: 4px 12px;
+    font-size: 14px;
+    border-radius: 4px;
+  }
+
+  #usertable th, #usertable td {
+    vertical-align: middle;
+    text-align: left;
+    font-size: 17px;
+    font-family: Verdana, sans-serif;
+  }
+
+  .fa-edit:hover {
+    color: #28a745;
+    transform: scale(1.1);
+  }
+
+
+
+td {
+  border: 1px solid rgb(0,164,166);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+</style>
+  
+ 
+<script>
+  function handleClick(tabId) {
+    // Remove active class from all buttons
+    document.querySelectorAll('.custom-tab-btn').forEach(btn => btn.classList.remove('active'));
+
+    // Add active class to clicked button
+    document.getElementById(tabId + '-btn').classList.add('active');
+
+    // Hide all content
+    document.querySelectorAll('.tab-pane').forEach(pane => {
+      pane.classList.remove('show', 'active');
+    });
+
+    // Show clicked tab content
+    document.getElementById(tabId).classList.add('show', 'active');
+  }
+</script>
+
+<style>
+  .button-tab-group {
+    background-color: white;
+    padding: 4px 10px;
+    border-radius: 0.25rem;
+    display: flex;
+    gap: 10px;
+  }
+
+  .custom-tab-btn {
+    background: white;
+    color: black;
+    font-weight: 600;
+    border: 2px solid rgb(0,164,166);
+    padding: 8px 20px;
+    margin-right: 10px;
+    border-radius: 30px;
+    transition: 0.3s;
+    cursor: pointer;
+  }
+
+  .custom-tab-btn:hover {
+    background-color: rgb(0,164,166);
+    color: white;
+  }
+
+  .custom-tab-btn.active {
+    background-color: rgb(0,164,166);
+    color: white;
+  }
+  .custom-tab-btn:focus {
+  outline: none;
+  box-shadow: none;
+}
+  
+</style>
+
 
 <title>BCDRS</title>
 <body>
@@ -360,28 +391,23 @@ PURPOSE		: Access the Modules by Role
 	<!-- -------------------User List Starts----------------------------------------------------- -->
 	<div class="container content">
 
-		
+			<div th:if="${formmode}=='list'">
 			<div class="card" style="width: 1433px; margin-left: -26px;">
-				<div class="card-header" style="background-color: #376275;">
+				<div class="card-header" style="background-color: rgb(0,164,166);">
 					<div class="float-left" style="color: white;">
 						<h5 
-							style="font-family: verdana; font-size: 30px; font-weight: bold; padding-top: 10px; ">NOSTRO ACCOUNT BALANCE</h5>
+							style="font-family: verdana; font-size: 20px; font-weight: bold; padding-top: 10px; ">NOSTRO ACCOUNT BALANCE</h5>
 					</div>
 					
 				</div>
 			
 
-<ul class="nav nav-tabs" id="myTab" role="tablist">
-  <li class="nav-item">
-    <a class="nav-link active" Style="color:black"id="datacontrols-tab" data-toggle="tab" href="#datacontrols" role="tab">Data Controls</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" id="template-tab" Style="color:black"data-toggle="tab" href="#template" role="tab">Template Instructions</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" id="data-tab" Style="color:black" data-toggle="tab" href="#data" role="tab">Data</a>
-  </li>
-</ul>
+<div class="button-tab-group" style="margin-top:5px;">
+  <button class="custom-tab-btn active" id="datacontrols-btn" onclick="handleClick('datacontrols')">Data Controls</button>
+  <button class="custom-tab-btn" id="template-btn" onclick="handleClick('template')">Template Instructions</button>
+  <button class="custom-tab-btn" id="data-btn" onclick="handleClick('data')">Data</button>
+</div>
+
 
 <div class="tab-content" id="myTabContent" style="margin-top: 15px;">
   <div class="tab-pane fade show active" id="datacontrols" role="tabpanel">
@@ -393,14 +419,16 @@ PURPOSE		: Access the Modules by Role
   <div class="tab-pane fade" id="data" role="tabpanel">
     <!-- Move your existing table content here -->
 
-			<div class="row">
+		<!-- 	<div class="row">
 				<div class="col-sm-12">
 					<div class="container-fluid">
-  
-  <div class="table-responsive" style="max-height: 500px; overflow: auto;">
-    <table class="table table-bordered table-striped table-hover" style="min-width: 2000px;">
+   -->
+  <div class="table-responsive" style="max-height: 500px; overflow: auto; border:none;">
+    <table id="usertable" class="table table-bordered table-striped table-hover" style="min-width: 2000px;">
       <thead class="thead-light" style="background-color:#e9ecf0; font-size: 13px;">
         <tr>
+        <th style="width: 40px;"></th>
+        
           <th style="min-width:130px">Data Date</th>
           <th>Bank Name</th>
           <th>Head Office/Subsidiary</th>
@@ -429,8 +457,15 @@ PURPOSE		: Access the Modules by Role
         </tr>
       </thead>
       <tbody>
+      
         <!-- Loop to render data dynamically -->
         <tr th:each="data : ${branchList}">
+<td>
+  <a th:href="@{'/Nostro_Account_Bal?accountNo=' + ${data.accountNo}}">
+    <i class="fa fa-edit" style="color: #007bff;"></i>
+  </a>
+</td>
+
           <td th:text="${#dates.format(data.dataDate, 'dd-MM-yyyy')}"></td>
           <td th:text="${data.bankName}"></td>
           <td th:text="${data.headOfficeSubsidiary}"></td>
@@ -462,38 +497,182 @@ PURPOSE		: Access the Modules by Role
   </div>
 </div>
 
-					<div class="card-footer text-center"
-						 style="background-color: #376275;">
-						<button type="button" class="btn btn-xs btn-primary" id="btnHome"
-							onclick="home();">Home</button>
-						<button type="button" class="btn btn-xs btn-primary" id="btnBack"
-							onclick="back();">Back</button>
-					</div>
-				</div>
-			</div>
-			</div>
-		</div>
-		</div>
-			<div class="row">
-			<div class="col-sm-12 finuserapply" >
-				
-	
-	</div>
-	</div>
-	</div>
-	<div class="modal fade" id="alert">
-		<div
-			class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-			<div class="modal-content">
-				<div class="modal-body" style="text-align: center">
-					<p id="alertmsg"></p>
-					<button type="button" class="btn btn-primary" data-dismiss="modal"
-						onclick="list();">Close</button>
-				</div>
-			</div>
-		</div>
-	</div>
+<div class="card-footer text-center"
+     style="background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); padding: 10px; border-top: 2px solid #ccc;">
+  <button type="button" class="btn btn-sm"
+        style="background: white; color: black; font-weight: 600; border: 2px solid rgb(0,164,166); padding: 8px 20px; margin-right: 10px; border-radius: 30px; transition: 0.3s;"
+        onmouseover="this.style.backgroundColor='rgb(0,164,166)'; this.style.color='white';"
+        onmouseout="this.style.backgroundColor='white'; this.style.color='black';"
+        onclick="home();">
+  <i class="fa fa-home"></i> Home
+</button>
 
+<button type="button" class="btn btn-sm"
+        style="background: white; color: black; font-weight: 600; border: 2px solid rgb(0,164,166); padding: 8px 20px; border-radius: 30px; transition: 0.3s;"
+        onmouseover="this.style.backgroundColor='rgb(0,164,166)'; this.style.color='white';"
+        onmouseout="this.style.backgroundColor='white'; this.style.color='black';"
+        onclick="back();">
+  <i class="fa fa-arrow-left"></i> Back
+</button>
+
+</div>
+
+
+
+
+
+				</div>
+			</div>
+			</div>
+		
+<div th:if="${formmode}=='edit'">
+ 
+<div class="row">
+		<form th:action="@{/updateNostro}" th:object="${nostroData}" method="post" id="Nostro">
+    	<div class="card" style="width: 1433px; margin-left: -26px;">
+						<div class="card-header"style="background-color: rgb(0,164,166);">
+							<div class="float-left">
+								<h3 th:if="${formmode}=='edit'" style="font-family: verdana;color: white; font-size: 24px; font-weight: bold; ">Nostro Account Balance- Edit</h3>
+							</div>
+							
+						</div>
+<div class="card-body" style="max-height: 600px; overflow-y: auto;">
+
+ 
+  
+    <input type="hidden" th:field="*{accountNo}" />
+    
+    <div class="form-group row">
+      <label class="col-sm-2 col-form-label">Bank Name</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" th:field="*{bankName}" />
+      </div>
+
+      <label class="col-sm-2 col-form-label">Bank Symbol</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" th:field="*{bankSymbol}" />
+      </div>
+    </div>
+
+ <div class="form-group row">
+      <label class="col-sm-2 col-form-label">Head Office Subsidiary</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" th:field="*{headOfficeSubsidiary}" />
+      </div>
+
+      <label class="col-sm-2 col-form-label">Subsidiary</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" th:field="*{subsidiary}" />
+      </div>
+</div>   
+ <div class="form-group row">
+      <label class="col-sm-2 col-form-label">Conventional Islamic</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" th:field="*{conventionalIslamic}" />
+      </div>
+
+      <label class="col-sm-2 col-form-label">Local Foreign</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" th:field="*{localForeign}" />
+      </div>
+</div>   
+ <div class="form-group row">
+      <label class="col-sm-2 col-form-label">CBUAE Tiering</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" th:field="*{cbuaeTiering}" />
+      </div>
+
+      <label class="col-sm-2 col-form-label">counter party Nostro Account</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" th:field="*{counterpartyNostroAccount}" />
+      </div>
+</div>   
+ <div class="form-group row">
+      <label class="col-sm-2 col-form-label">Final Rating (Banks)</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" th:field="*{finalRatingBanks}" />
+      </div>
+
+      <label class="col-sm-2 col-form-label">final Rating CBUAE</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" th:field="*{finalRatingCbuae}" />
+      </div>
+</div>   
+ <div class="form-group row">
+      <label class="col-sm-2 col-form-label">Country Of Risk</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" th:field="*{countryOfRisk}" />
+      </div>
+
+      <label class="col-sm-2 col-form-label">CBUAE Geographical Zone</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" th:field="*{cbuaeGeographicalZone}" />
+      </div>
+</div>   
+ <div class="form-group row">
+      <label class="col-sm-2 col-form-label">currency</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" th:field="*{currency}" />
+      </div>
+
+      <label class="col-sm-2 col-form-label">Counter Party Settlement Date</label>
+      <div class="col-sm-4">
+        <input type="date" class="form-control" th:field="*{counterpartySettlementDate}" />
+      </div>
+</div>   
+
+ <div class="form-group row">
+      <label class="col-sm-2 col-form-label">Counter Party Balance</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" th:field="*{counterpartyBalance}" />
+      </div>
+
+      <label class="col-sm-2 col-form-label">Counter Party Balance Aed</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" th:field="*{counterpartyBalanceAed}" />
+      </div>
+</div>   
+ <div class="form-group row">
+      <label class="col-sm-2 col-form-label">Bank Internal Settlement Date</label>
+      <div class="col-sm-4">
+        <input type="date" class="form-control" th:field="*{bankInternalSettlementDate}" />
+      </div>
+
+      <label class="col-sm-2 col-form-label">Bank Balance</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" th:field="*{bankBalance}" />
+      </div>
+</div>   
+ <div class="form-group row">
+      <label class="col-sm-2 col-form-label">Bank Balance Aed</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" th:field="*{bankBalanceAed}" />
+      </div>
+
+      <label class="col-sm-2 col-form-label">Gap</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" th:field="*{gap}" />
+      </div>
+</div>   
+ </div>
+
+    
+
+
+    <!-- Submit -->
+   <div class="card-footer text-center"
+     style="background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); padding: 10px; border-top: 2px solid #ccc;">
+   <button type="submit" class="btn btn-success" onclick="updateform()">Update</button>
+      <a th:href="@{/Nostro_Account_Bal}" class="btn btn-secondary ml-2">Cancel</a>
+    </div>
+    
+    </div>
+  </form>
+</div>
+</div>
+</div>
+
+	
 
 	<div class="modal fade" id="datadelete">
 		<div
@@ -521,7 +700,7 @@ PURPOSE		: Access the Modules by Role
 					<button type="button" class="close" data-dismiss="modal">×</button>
 					<a th:value="${msg}"></a>
 				</div>
-				<div class="modal-footer">
+				<div class="modal-footer" style="background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); padding: 10px; border-top: 2px solid #ccc;">
 					<button type="button" class="btn btn-primary"
 						onclick="submitformdelete(this);" th:attr="data-formmode=delete">Submit</button>
 					<button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
@@ -529,7 +708,109 @@ PURPOSE		: Access the Modules by Role
 			</div>
 		</div>
 	</div>
+<!-- Alert Modal -->
+<!-- <div class="modal fade" id="alert" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-info text-white">
+        <h5 class="modal-title">Message</h5>
+      </div>
+      <div class="modal-body">
+        <p id="alertmsg">Loading...</p>
+      </div>
+    </div>
+  </div>
+</div> -->
+<div class="modal fade" id="alert">
+		<div
+			class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+			<div class="modal-content">
+			<div class="menu-title-header">
+					<div class="modal-title" id="exampleModalLabel"
+						style="text-align: center; color: white;background-color: rgb(0,164,166);">BANK OF BARODA</div>
+				</div>
+				<div class="modal-body" style="text-align: center">
+					<p id="alertmsg"></p>
+					<button type="button" class="btn btn-primary" onclick="list()"
+						data-dismiss="modal" style="background-color: rgb(0,164,166);">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	
 
-
+	<div class="modal fade" id="loader1" data-backdrop="static"
+			data-keyboard="false">
+			<div
+				class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+				<div class="modal-content" style="background: transparent;">
+					<div class="modal-body" style="text-align: center">
+						<div>
+							<img th:src=@{/images/loader.gif} id="bfirelogo"
+								style="width: 153px; height: auto; margin-left: 18px; background-color: transparent;
+								border-color: transparent;"
+								alt="Bornfire">
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
 </body>
+<script>
+  $(document).ready(function () {
+    $('#usertable').DataTable({
+      "paging": true,
+      "pageLength": 10,
+      "lengthChange": false,
+      "searching": true,
+      "ordering": true,
+      "info": true,
+      "autoWidth": false,
+      "language": {
+        "search": "Search:"
+      }
+    });
+  });
+</script>
+
+
+<!-- Include this after your DataTable initialization script -->
+
+<style>
+  /* FIX: Make search label and box inline */
+  div.dataTables_filter label {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+  }
+
+  /* Style pagination buttons */
+  .dataTables_wrapper .dataTables_paginate .paginate_button {
+    background-color: white;
+    border: 1px solid rgb(0,164,166);
+    color: rgb(0,164,166) !important;
+    padding: 5px 10px;
+    margin: 2px;
+    border-radius: 6px;
+    transition: 0.3s;
+    font-weight: 600;
+  }
+
+  .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+  .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background-color: rgb(0,164,166) !important;
+    color: white !important;
+  }
+
+  /* Optional: Style the search input */
+  .dataTables_filter input {
+    border: 1px solid rgb(0,164,166);
+    border-radius: 4px;
+    padding: 4px 8px;
+  }
+</style>
+
+
 </html>

@@ -2,15 +2,19 @@ package com.bornfire.xbrl.services;
 
 import java.math.BigDecimal;
 
+
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+
+import javax.sql.DataSource;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +33,12 @@ public class AccessAndRolesServices {
 	@Autowired
 	SessionFactory sessionFactory;
 
+	@Autowired
+	Environment env;
+	
+	@Autowired
+	DataSource srcdataSource;
+	
 	@SuppressWarnings("unchecked")
 	public List<AccessAndRoles> gettingaccessDetails(String roleid) {
 
